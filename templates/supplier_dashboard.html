@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Supplier Dashboard — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Seller Dashboard</span>
+    </nav>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div>
+        <h1>{{ s.company_name }}</h1>
+        <p>
+          {% if s.verification_status == 'verified' %}<span class="badge badge-verified">✓ Verified Supplier</span>
+          {% elif s.verification_status == 'pending' %}<span class="badge badge-pending">Verification pending — approval usually takes 2-4 business days</span>
+          {% else %}<span class="badge badge-soft">{{ s.verification_status|title }}</span>{% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_supplier_sidebar.html" %}
+    <div>
+        </div>
+        <a class="btn btn-primary" href="{{ url_for('supplier_product_add') }}">+ Add Product</a>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="stat-card__value" data-count="{{ stats.revenue }}" data-prefix="$">{{ stats.revenue }}</div><div class="stat-card__label">Revenue (delivered)</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg></div><div class="stat-card__value" data-count="{{ stats.orders }}">{{ stats.orders }}</div><div class="stat-card__label">Orders</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div><div class="stat-card__value" data-count="{{ stats.products }}">{{ stats.products }}</div><div class="stat-card__label">Products</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8"/><path d="M8 14h5"/></svg></div><div class="stat-card__value" data-count="{{ stats.quotes }}">{{ stats.quotes }}</div><div class="stat-card__label">Pending Quotes</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+        <div class="panel">
+          <h3>Top Products</h3>
+          {% if top_products %}
+          <div style="display:flex;flex-direction:column;gap:10px">
+            {% for p in top_products %}
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                <div style="font-size:11.5px;color:var(--slate-400)">{{ p.sold }} sold · ${{ '%.2f'|format(p.price) }}/unit</div>
+              </div>
+              <span class="badge {% if p.stock <= p.low_stock_threshold %}badge-hot{% else %}badge-soft{% endif %}">{{ p.stock }} in stock</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}<div class="empty" style="padding:24px"><p>No products yet.</p></div>{% endif %}
+        </div>
+        <div class="panel">
+          <h3>Low Stock Alerts</h3>
+          {% if low_stock %}
+          <div style="display:flex;flex-direction:column;gap:10px">
+            {% for p in low_stock %}
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13px;font-weight:600;color:var(--slate-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                <div style="font-size:11.5px;color:var(--error)">Only {{ p.stock }} units remaining (threshold: {{ p.low_stock_threshold }})</div>
+              </div>
+              <a class="btn btn-outline btn-sm" href="{{ url_for('supplier_product_edit', pid=p.id) }}">Restock</a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}<div class="empty" style="padding:24px"><p>All stock levels healthy. ✓</p></div>{% endif %}
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Recent Orders</h3>
+        {% if recent_orders %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Order</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              {% for r in recent_orders %}
+              <tr>
+                <td><b>{{ r.order_number }}</b><br><span style="font-size:11px;color:var(--slate-400)">{{ r.created_at[:10] }}</span></td>
+                <td>{{ r.product_name }}</td>
+                <td>{{ r.qty }}</td>
+                <td>${{ '%.2f'|format(r.total) }}</td>
+                <td><span class="badge {% if r.status == 'delivered' %}badge-verified{% else %}badge-soft{% endif %}">{{ ORDER_LABELS[r.status] }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}<div class="empty" style="padding:24px"><p>No orders yet.</p></div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Your Cart — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Cart</span>
+    </nav>
+    <h1>Your Cart</h1>
+    {% if lines %}<p>{{ lines|length }} item{% if lines|length != 1 %}s{% endif %} ready to review</p>{% else %}<p>Your wholesale cart is waiting.</p>{% endif %}
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  {% if lines %}
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:28px;align-items:start">
+    <div>
+      {% set ns = namespace(supplier='') %}
+      {% for l in lines %}
+        {% if l.supplier != ns.supplier %}
+          {% set ns.supplier = l.supplier %}
+        <div class="cart-supplier__head" style="background:var(--slate-50);padding:12px 18px;font-size:13px;font-weight:700;color:var(--slate-700);border:1px solid var(--slate-100);border-radius:var(--r-lg) var(--r-lg) 0 0;display:flex;justify-content:space-between">
+          <span>🏭 {{ l.supplier }}{% if l.verification_status == 'verified' %} <span class="badge badge-verified" style="font-size:10px">✓</span>{% endif %}</span>
+          <span style="font-weight:500;color:var(--slate-400)">{{ '%.1f'|format(l.supplier_rating or 4.5) }}★</span>
+        </div>
+        {% endif %}
+      <div class="cart-item">
+        <div class="cart-item__img">{{ l.name.split(' ')[:2]|join(' ') }}</div>
+        <div class="cart-item__info">
+          <div class="cart-item__name"><a href="{{ url_for('product', slug=l.slug) }}">{{ l.name }}</a></div>
+          <div class="cart-item__unit">${{ '%.2f'|format(l.unit) }}/unit {% if l.pct > 0 %}<span style="color:var(--success-600)">(tier saves {{ l.pct }}%)</span>{% endif %}</div>
+        </div>
+        <form method="post" action="{{ url_for('cart_update') }}" style="display:flex;align-items:center;gap:8px">
+          <input type="hidden" name="product_id" value="{{ l.id }}">
+          <div class="qty-selector">
+            <button type="button" onclick="this.parentElement.querySelector('input').value=Math.max({{ l.moq }},parseInt(this.parentElement.querySelector('input').value)-1);this.form.submit()">−</button>
+            <input name="qty" value="{{ l.qty }}" min="{{ l.moq }}" readonly style="width:44px">
+            <button type="button" onclick="this.parentElement.querySelector('input').value=parseInt(this.parentElement.querySelector('input').value)+1;this.form.submit()">+</button>
+          </div>
+        </form>
+        <div class="cart-item__total">${{ '%.2f'|format(l.line_total) }}</div>
+        <form method="post" action="{{ url_for('cart_remove') }}">
+          <input type="hidden" name="product_id" value="{{ l.id }}">
+          <button style="color:var(--slate-300)" aria-label="Remove">✕</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="summary">
+      <h3 style="margin-bottom:16px">Order Summary</h3>
+      <div class="summary__row"><span>Subtotal</span><span>${{ '%.2f'|format(subtotal) }}</span></div>
+      <div class="summary__row summary__row--save"><span>Bulk savings</span><span>-${{ '%.2f'|format(savings) }}</span></div>
+      <div class="summary__row"><span>Shipping</span><span>Calculated at checkout</span></div>
+      <div class="summary__row summary__row--total"><span>Total</span><span>${{ '%.2f'|format(subtotal - savings) }}</span></div>
+      <a class="btn btn-primary btn-lg btn-block" href="{{ url_for('checkout') }}">Proceed to Checkout →</a>
+      <a class="btn btn-ghost btn-block" style="margin-top:8px" href="{{ url_for('products') }}">Continue Shopping</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+    <h3>Your cart is empty</h3>
+    <p>Discover wholesale products to add to your order.</p>
+    <a class="btn btn-primary" href="{{ url_for('products') }}" style="margin-top:16px">Explore Products</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

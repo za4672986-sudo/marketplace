@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}My Products — TradeLink Supplier{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>My Products</span>
+    </nav>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+      <div>
+        <h1>My Products</h1>
+        <p>Manage your catalog, pricing and stock levels.</p>
+      </div>
+      <a class="btn btn-primary" href="{{ url_for('supplier_product_add') }}">+ Add Product</a>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_supplier_sidebar.html" %}
+    <div>
+      {% if rows %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>MOQ</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {% for p in rows %}
+            <tr>
+              <td><b>{{ p.name }}</b><br><span style="font-size:11px;color:var(--slate-400)">SKU: {{ p.sku or '—' }}</span></td>
+              <td>{{ p.category_name }}</td>
+              <td>${{ '%.2f'|format(p.price) }}</td>
+              <td>{{ p.moq }}</td>
+              <td>
+                <span class="badge {% if p.stock <= p.low_stock_threshold %}badge-hot{% elif p.stock == 0 %}badge-danger{% else %}badge-soft{% endif %}">
+                  {% if p.stock == 0 %}Out of stock{% elif p.stock <= p.low_stock_threshold %}Only {{ p.stock }} left{% else %}{{ p.stock }}{% endif %}
+                </span>
+              </td>
+              <td>
+                {% if p.status == 'approved' %}<span class="badge badge-verified">Live</span>
+                {% elif p.status == 'pending' %}<span class="badge badge-pending">Pending approval</span>
+                {% else %}<span class="badge badge-danger">Rejected</span>{% endif %}
+              </td>
+              <td style="white-space:nowrap">
+                <a class="btn btn-outline btn-sm" href="{{ url_for('supplier_product_edit', pid=p.id) }}">Edit</a>
+                <form method="post" action="{{ url_for('supplier_product_delete', pid=p.id) }}" style="display:inline" onsubmit="return confirm('Delete this product?')">
+                  <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <h3>No products yet</h3>
+        <p>Add your first product to start selling.</p>
+        <a class="btn btn-primary" href="{{ url_for('supplier_product_add') }}" style="margin-top:16px">Add Product</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

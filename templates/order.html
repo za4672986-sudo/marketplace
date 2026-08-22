@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Order {{ o.order_number }} — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><a href="{{ url_for('orders') }}">My Orders</a><span class="sep">/</span><span>{{ o.order_number }}</span>
+    </nav>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+      <div>
+        <h1>Order {{ o.order_number }}</h1>
+        <p>Placed {{ o.created_at[:16] }} · {{ o.shipping_method|replace('_', ' ')|title }}</p>
+      </div>
+      <span class="badge {% if o.status == 'delivered' %}badge-verified{% elif o.status in ('shipped','in_transit') %}badge-new{% else %}badge-soft{% endif %}" style="font-size:14px;padding:8px 16px">{{ ORDER_LABELS[o.status] }}</span>
+    </div>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:900px">
+
+  <div class="panel" style="margin-bottom:24px">
+    <h3>Shipment Tracking</h3>
+    <div class="timeline">
+      {% for s in ORDER_FLOW %}
+      <div class="timeline__step {% if loop.index0 < flow_idx %}done{% elif loop.index0 == flow_idx %}current{% endif %}">
+        <div class="timeline__dot">{% if loop.index0 < flow_idx %}✓{% endif %}</div>
+        <div class="timeline__label">{{ ORDER_LABELS[s] }}</div>
+        <div class="timeline__date">{% if loop.index0 <= flow_idx %}{{ o.created_at[:10] }}{% endif %}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+    <div class="panel">
+      <h3>Ship To</h3>
+      {% if addr %}
+      <p style="font-size:14px;margin:0"><b>{{ addr.get('full_name', '') }}</b><br>
+        {{ addr.get('line1', '') }}{% if addr.get('line2') %}, {{ addr.get('line2') }}{% endif %}<br>
+        {{ addr.get('city', '') }}{% if addr.get('state') %}, {{ addr.get('state') }}{% endif %} {{ addr.get('zip', '') }}<br>
+        {{ addr.get('country', '') }}</p>
+      {% endif %}
+    </div>
+    <div class="panel">
+      <h3>Payment</h3>
+      {% set pc = PAYMENT_PROVIDERS.get(o.payment_method) %}
+      <p style="font-size:14px;margin:0">
+        <b>{{ pc.label if pc else o.payment_method|replace('_', ' ')|title }}</b>
+        {% if pc and pc.country %}<span style="font-size:11.5px;color:var(--slate-400)"> · {{ pc.country }}</span>{% endif %}
+        <span class="badge {% if o.payment_status == 'confirmed' %}badge-verified{% else %}badge-pending{% endif %}">{{ o.payment_status|title }}</span>
+      </p>
+      {% for pm in payments %}
+      <p style="font-size:12.5px;color:var(--slate-400);margin:8px 0 0">
+        {{ pm.provider }} · ${{ '%.2f'|format(pm.amount) }}
+        {% if pm.provider_ref %}<span style="color:var(--slate-500)"> · Ref: <b>{{ pm.provider_ref }}</b></span>{% endif %}
+      </p>
+      {% endfor %}
+      {% if o.payment_status == 'pending' and pc and pc.instructions %}
+      <div style="margin-top:12px;padding:12px 14px;background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--r-md);font-size:12.5px;color:var(--slate-600)">
+        <b>How to pay:</b> {{ pc.instructions }}
+      </div>
+      <form method="post" action="{{ url_for('order_mark_paid', order_id=o.id) }}" style="margin-top:12px">
+        <button class="btn btn-success btn-sm" type="submit" style="background:var(--success-500);color:#fff">
+          I've Sent the Payment — Confirm (simulated gateway callback)
+        </button>
+      </form>
+      <div style="font-size:11.5px;color:var(--slate-400);margin-top:8px">
+        In production, the provider's webhook calls this endpoint automatically and verifies the transaction.
+      </div>
+      {% endif %}
+      <div style="font-size:11.5px;color:var(--slate-400);margin-top:12px;border-top:1px dashed var(--slate-200);padding-top:10px">
+        Merchant contact: <b>{{ merchant_email }}</b>
+        {% if not smtp_ready %} — email notifications are off until SMTP is configured{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:24px">
+    <h3>Items</h3>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      {% for it in items %}
+      <div style="display:flex;gap:14px;align-items:center">
+        <div style="width:52px;height:52px;border-radius:10px;background:var(--slate-100);flex-shrink:0;display:grid;place-items:center;font-size:10.5px;color:var(--slate-400);font-weight:600;text-align:center">{{ it.product_name.split(' ')[:2]|join(' ') }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--slate-800)">{{ it.product_name }}</div>
+          <div style="font-size:12px;color:var(--slate-400)">{{ it.company_name }} · ${{ '%.2f'|format(it.unit_price) }}/unit × {{ it.qty }}</div>
+        </div>
+        <div style="font-size:14.5px;font-weight:700">${{ '%.2f'|format(it.total) }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="border-top:1px solid var(--slate-100);margin-top:16px;padding-top:14px;display:flex;flex-direction:column;gap:8px;font-size:14px;margin-left:auto;max-width:320px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--slate-500)">Subtotal</span><span>${{ '%.2f'|format(o.subtotal) }}</span></div>
+      {% if o.discount %}<div style="display:flex;justify-content:space-between"><span style="color:var(--success-600)">Discount{% if o.coupon_code %} ({{ o.coupon_code }}){% endif %}</span><span style="color:var(--success-600)">-${{ '%.2f'|format(o.discount) }}</span></div>{% endif %}
+      {% if o.shipping %}<div style="display:flex;justify-content:space-between"><span style="color:var(--slate-500)">Shipping</span><span>${{ '%.2f'|format(o.shipping) }}</span></div>{% endif %}
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--slate-500)">Tax</span><span>${{ '%.2f'|format(o.tax) }}</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:16px;border-top:1px solid var(--slate-100);padding-top:10px"><span>Total</span><span>${{ '%.2f'|format(o.total) }}</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button class="btn btn-outline" onclick="toast('Invoice download coming soon')">Download Invoice</button>
+    <button class="btn btn-outline" onclick="toast('Refund request coming soon')">Request Refund</button>
+    <a class="btn btn-primary" href="{{ url_for('messages') }}">Message Supplier</a>
+  </div>
+</div>
+{% endblock %}

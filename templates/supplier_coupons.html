@@ -1,0 +1,68 @@
+﻿{% extends "base.html" %}
+{% block title %}Coupons â€” TradeLink Supplier{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Coupons &amp; Promotions</span>
+    </nav>
+    <h1>Coupons &amp; Promotions</h1>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_supplier_sidebar.html" %}
+    <div>
+
+      <div class="panel" style="margin-bottom:24px">
+        <h3>Create Coupon</h3>
+        <form method="post">
+          <div class="form-row">
+            <div class="form-group"><label>Coupon code</label><input class="form-control" name="code" placeholder="e.g. NOV20" required></div>
+            <div class="form-group"><label>Discount type</label>
+              <select class="form-control" name="discount_type">
+                <option value="percent">Percentage (%)</option>
+                <option value="fixed">Fixed amount ($)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Value</label><input class="form-control" type="number" step="0.01" name="value" required></div>
+            <div class="form-group"><label>Min order ($)</label><input class="form-control" type="number" step="0.01" name="min_order" value="0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Max discount ($, 0 = none)</label><input class="form-control" type="number" step="0.01" name="max_discount" value="0"></div>
+            <div class="form-group"><label>Usage limit</label><input class="form-control" type="number" name="usage_limit" value="100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Start date</label><input class="form-control" type="date" name="start_date"></div>
+            <div class="form-group"><label>End date</label><input class="form-control" type="date" name="end_date"></div>
+          </div>
+          <button class="btn btn-primary" type="submit">Create Coupon</button>
+        </form>
+      </div>
+
+      {% if rows %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min order</th><th>Used / Limit</th><th>Valid</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for c in rows %}
+            <tr>
+              <td><b>{{ c.code }}</b></td>
+              <td>{{ 'Percentage' if c.discount_type == 'percent' else 'Fixed' }}</td>
+              <td>{{ c.value }}{{ '%' if c.discount_type == 'percent' else '$' }}</td>
+              <td>${{ '%.0f'|format(c.min_order) }}</td>
+              <td>{{ c.used_count }} / {{ c.usage_limit }}</td>
+              <td>{{ c.start_date[:10] if c.start_date }} â†’ {{ c.end_date[:10] if c.end_date }}</td>
+              <td><span class="badge {% if c.active and (c.end_date is none or c.end_date >= now|string) %}badge-verified{% else %}badge-soft{% endif %}">{% if c.active %}Active{% else %}Inactive{% endif %}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

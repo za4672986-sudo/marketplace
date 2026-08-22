@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Checkout — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><a href="{{ url_for('cart') }}">Cart</a><span class="sep">/</span><span>Checkout</span>
+    </nav>
+    <h1>Checkout</h1>
+    <p><b>Step 1-2:</b> Contact &amp; Shipping &nbsp;·&nbsp; <b>Step 3:</b> Shipping method &nbsp;·&nbsp; <b>Step 4:</b> Payment &nbsp;·&nbsp; <b>Step 5:</b> Review</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:1000px">
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start">
+    <div>
+      <form method="post" action="{{ url_for('checkout') }}">
+        <input type="hidden" name="step" value="save_address">
+        <div class="panel" style="margin-bottom:20px">
+          <h3>1. Contact &amp; Shipping Address</h3>
+          {% if addresses %}
+          <div class="form-group">
+            <label>Saved addresses</label>
+            <select name="address_id" class="form-control">
+              {% for a in addresses %}
+              <option value="{{ a.id }}" {% if a.is_default %}selected{% endif %}>{{ a.label }} — {{ a.full_name }}, {{ a.line1 }}, {{ a.city }}, {{ a.country }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          <div class="form-row">
+            <div class="form-group"><label>Full name</label><input class="form-control" name="full_name" required></div>
+            <div class="form-group"><label>Phone</label><input class="form-control" name="phone" required></div>
+          </div>
+          <div class="form-group"><label>Address line 1</label><input class="form-control" name="line1" required></div>
+          <div class="form-group"><label>Address line 2 (optional)</label><input class="form-control" name="line2"></div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input class="form-control" name="city" required></div>
+            <div class="form-group"><label>State / Province</label><input class="form-control" name="state"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>ZIP / Postal</label><input class="form-control" name="zip"></div>
+            <div class="form-group"><label>Country</label><input class="form-control" name="country" value="United States" required></div>
+          </div>
+          <button class="btn btn-outline" type="submit">Save Address</button>
+        </div>
+
+        <div class="panel" style="margin-bottom:20px">
+          <h3>3. Shipping Method</h3>
+          {% for key, s in shipping_costs.items() %}
+          <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px solid var(--slate-200);border-radius:var(--r-md);margin-bottom:10px;cursor:pointer">
+            <input type="radio" name="shipping_method" value="{{ key }}" {% if key=='standard' %}checked{% endif %} required>
+            <span style="flex:1"><b>{{ s.label }}</b><br><span style="font-size:12.5px;color:var(--slate-400)">{{ s.cost }}</span></span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <div class="panel" style="margin-bottom:20px">
+          <h3>4. Payment Method</h3>
+          <p style="font-size:12.5px;color:var(--slate-400);margin-bottom:14px">
+            Real payment channels — EasyPaisa, JazzCash, bKash, GCash, M-PESA, bank transfer or cash on delivery.
+            For live processing, connect each provider's API with its environment key (see <code>app.py → PAYMENT_PROVIDERS</code>).
+          </p>
+          {% for key, cfg in providers.items() %}
+          {% if cfg.enabled %}
+          <label class="pay-option" data-provider="{{ key }}">
+            <input type="radio" name="payment_method" value="{{ key }}" {% if key=='bank_transfer' %}checked{% endif %} required
+                   onchange="togglePayRef(this.value)">
+            <span style="flex:1">
+              <b>{{ cfg.label }}</b>
+              {% if cfg.wallet %}<span class="badge badge-new" style="margin-left:8px">Mobile Wallet</span>{% endif %}
+              <span style="float:right;font-size:11.5px;color:var(--slate-400)">{{ cfg.country }}</span>
+            </span>
+          </label>
+          {% endif %}
+          {% endfor %}
+
+          <div id="payRefWrap" style="display:none;margin-top:14px">
+            <label class="form-hint" id="payRefLabel">Mobile wallet number</label>
+            <input class="form-control" name="provider_ref" id="payRefInput" placeholder="e.g. 0300-1234567">
+            <p style="font-size:12px;color:var(--slate-400);margin:8px 0 0" id="payRefNote"></p>
+          </div>
+
+          <div id="payInstructions" style="margin-top:14px;padding:12px 14px;background:var(--slate-50);border:1px solid var(--slate-100);border-radius:var(--r-md);font-size:13px;color:var(--slate-600)">
+            {{ providers.bank_transfer.instructions }}
+          </div>
+          <div style="font-size:12px;color:var(--slate-400);margin-top:10px">
+            Stripe &amp; PayPal are disabled until you set <code>STRIPE_SECRET_KEY</code> / <code>PAYPAL_CLIENT_SECRET</code> and flip <code>enabled: True</code>.
+            Payment confirmations are emailed to your account inbox from <b>{{ merchant_email }}</b>.
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>5. Review &amp; Place Order</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--slate-600);margin-bottom:16px">
+            {% for l in lines %}
+            <div style="display:flex;justify-content:space-between">
+              <span>{{ l.qty }} × {{ l.name[:42] }}{% if l.name|length > 42 %}…{% endif %}</span>
+              <span>${{ '%.2f'|format(l.line_total) }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <div style="border-top:1px solid var(--slate-100);padding-top:12px;display:flex;flex-direction:column;gap:8px;font-size:14px;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--slate-500)">Subtotal</span><b>${{ '%.2f'|format(subtotal) }}</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--success-600)">Bulk savings</span><b style="color:var(--success-600)">-${{ '%.2f'|format(savings) }}</b></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--slate-500)">Est. tax (5%)</span><b>${{ '%.2f'|format((subtotal-savings)*0.05) }}</b></div>
+          </div>
+          <button class="btn btn-primary btn-lg btn-block" type="submit">Place Order — ${{ '%.2f'|format(subtotal - savings) }} est.</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="summary">
+      <h3 style="margin-bottom:14px">Items</h3>
+      {% for l in lines %}
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--slate-600);margin-bottom:8px">
+        <span>{{ l.qty }}× {{ l.name[:24] }}{% if l.name|length > 24 %}…{% endif %}</span>
+        <span>${{ '%.2f'|format(l.line_total) }}</span>
+      </div>
+      {% endfor %}
+      <div style="border-top:1px solid var(--slate-100);margin:12px 0;padding-top:12px;display:flex;justify-content:space-between;font-weight:700">
+        <span>Total</span><span>${{ '%.2f'|format(subtotal - savings) }}</span>
+      </div>
+      <form method="post" action="{{ url_for('coupon_apply') }}" style="display:flex;gap:8px;margin-top:12px">
+        <input class="form-control" name="code" placeholder="Coupon code (try FLASH20)" style="font-size:13px;padding:10px 12px">
+        <button class="btn btn-outline btn-sm" type="submit">Apply</button>
+      </form>
+    </div>
+
+{% block scripts %}
+<script>
+var PROVIDERS={{ providers|tojson }};
+function togglePayRef(key){
+  var cfg=PROVIDERS[key]||{};
+  var wrap=document.getElementById('payRefWrap');
+  var inst=document.getElementById('payInstructions');
+  var lbl=document.getElementById('payRefLabel');
+  var note=document.getElementById('payRefNote');
+  var input=document.getElementById('payRefInput');
+  if(cfg.wallet){
+    wrap.style.display='block';
+    lbl.textContent='Your '+cfg.label+' number';
+    note.textContent='The payment is sent to our '+cfg.label+' wallet — instructions below. Use your Order ID as the reference.';
+    input.required=true;
+  }else{
+    wrap.style.display='none';
+    input.required=false;
+  }
+  inst.textContent=cfg.instructions||'';
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var sel=document.querySelector('input[name="payment_method"]:checked');
+  if(sel){togglePayRef(sel.value)}
+});
+</script>
+{% endblock %}
+  </div>
+</div>
+{% endblock %}

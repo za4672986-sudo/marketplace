@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — TradeLink Wholesale{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Contact</span>
+    </nav>
+    <h1>Contact TradeLink</h1>
+    <p>We reply within 1 business day. For order-specific help, include your order number.</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:760px">
+
+  {% if g.user %}
+  <div class="alert alert-info">You're signed in as <b>{{ g.user.email }}</b> — we'll reply to this address.</div>
+  {% endif %}
+
+  <form method="post" class="panel" style="max-width:640px">
+    <div class="form-row">
+      <div class="form-group"><label>Your name *</label><input class="form-control" name="name" value="{{ g.user.name if g.user else '' }}" required></div>
+      <div class="form-group"><label>Email *</label><input class="form-control" type="email" name="email" value="{{ g.user.email if g.user else '' }}" required></div>
+    </div>
+    <div class="form-group"><label>Subject</label>
+      <select class="form-control" name="subject">
+        <option>General inquiry</option>
+        <option>Order support</option>
+        <option>Payment &amp; refunds</option>
+        <option>Supplier onboarding</option>
+        <option>Partnership</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Message *</label><textarea class="form-control" name="message" rows="6" required placeholder="How can we help?"></textarea></div>
+    <button class="btn btn-primary" type="submit">Send Message</button>
+  </form>
+
+  <div class="panel" style="margin-top:20px;background:var(--slate-50)">
+    <h3 style="font-size:15px;margin-bottom:10px">Direct contact</h3>
+    <p style="font-size:13.5px;color:var(--slate-600);margin:0">
+      Email: <b>{{ merchant_email }}</b><br>
+      Hours: Mon–Fri, 9:00–18:00 (GMT+5)
+    </p>
+  </div>
+</div>
+{% endblock %}

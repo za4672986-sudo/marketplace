@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+{% block title %}TradeLink Wholesale — B2B Wholesale Marketplace{% endblock %}
+{% block content %}
+
+<section class="hero" data-hero>
+  <div class="orb orb--1" aria-hidden="true"></div>
+  <div class="orb orb--2" aria-hidden="true"></div>
+  <div class="hero__light" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div>
+      <span class="hero__badge anim-enter"><span class="dot"></span> Trusted by 48,000+ retailers worldwide</span>
+      <h1 class="anim-enter-d1" data-split>Source Products Directly.<br>Buy <span class="highlight">Wholesale</span>.<br>Grow Your Business.</h1>
+      <p class="hero__sub anim-enter-d2">Discover verified suppliers, competitive wholesale pricing, bulk deals, and thousands of products built for retailers and growing businesses.</p>
+      <div class="hero__ctas anim-enter-d3">
+        <a class="btn btn-primary btn-lg btn-shine" data-magnetic href="{{ url_for('products') }}">Explore Wholesale Products <span class="btn__arrow">→</span></a>
+        <a class="btn btn-outline btn-lg" data-magnetic href="{{ url_for('register', role='supplier') }}">Become a Supplier</a>
+      </div>
+      <div class="hero__stats">
+        <div><span class="hero__stat-value"><em>48K</em>+</span><span class="hero__stat-label">Buyers &amp; Retailers</span></div>
+        <div><span class="hero__stat-value"><em>12.5K</em>+</span><span class="hero__stat-label">Verified Suppliers</span></div>
+        <div><span class="hero__stat-value"><em>240M</em>+</span><span class="hero__stat-label">Products Listed</span></div>
+      </div>
+    </div>
+    <div class="hero__visual anim-enter-d2" style="position:relative">
+      <div class="hero__stage" data-tilt data-tilt-max="9">
+        <div class="hero__products-grid">
+          {% for p in deals[:6] %}
+          <div class="hero__mini-product">
+            <div class="hero__mini-img">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+            <div class="hero__mini-name">{{ p.name[:28] }}{% if p.name|length > 28 %}…{% endif %}</div>
+            <div class="hero__mini-price">${{ '%.2f'|format(p.price) }} {% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="float-card float-card--verified anim-float">
+        <span class="float-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg></span>
+        <span><span class="float-card__title">Verified Supplier</span><span class="float-card__sub">ID-checked &amp; audited</span></span>
+      </div>
+      <div class="float-card float-card--bulk anim-float" style="animation-delay:1.2s">
+        <span class="float-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/></svg></span>
+        <span><span class="float-card__title">Bulk Discounts</span><span class="float-card__sub">Save up to 35%</span></span>
+      </div>
+      <div class="float-card float-card--ship">
+        <span class="float-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14V7H5z"/><path d="M5 17v3h14v-3"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></span>
+        <span><span class="float-card__title">Fast Global Shipping</span><span class="float-card__sub">120+ countries</span></span>
+      </div>
+      <a class="hero__scroll" href="#categories" aria-label="Scroll to content">
+        <span class="hero__scroll-mouse"><span></span></span>
+        <span class="hero__scroll-text">Scroll</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% if campaigns %}
+<section class="section" style="padding-bottom:0">
+  <div class="container">
+    {% for c in campaigns %}
+    <div class="campaign-banner" style="background:linear-gradient(120deg,{{ c.banner_color }},#172053)">
+      <div>
+        <h2>{{ c.title }}</h2>
+        <p>{{ c.description }}</p>
+        {% if c.end_date %}<p style="font-size:12.5px;opacity:.75;margin-top:6px">Ends {{ c.end_date[:10] }}</p>{% endif %}
+      </div>
+      <a class="btn btn-accent btn-lg" href="{{ url_for('products', sort='discount') }}">Shop the Sale →</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="categories">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Shop by category</span>
+        <h2>Popular Categories</h2>
+        <p>Explore sourcing categories trusted by importers and retailers across 190+ countries.</p>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('products') }}">View All Products</a>
+    </div>
+    <div class="cat-grid">
+      {% for c in cats %}
+      <a class="cat-card" href="{{ url_for('category', slug=c.slug) }}">
+        <div class="cat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-8 8"/></svg></div>
+        <div class="cat-card__name">{{ c.name }}</div>
+        <div class="cat-card__count">View products</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="deals">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Best value</span>
+        <h2>Wholesale Deals</h2>
+        <p>Limited-time wholesale pricing with tiered bulk discounts and fast restocking.</p>
+      </div>
+      <a class="btn btn-accent" href="{{ url_for('products', sort='discount') }}">Buy in Bulk &amp; Save More →</a>
+    </div>
+    <div class="grid">
+      {% for p in deals[:8] %}
+      <article class="card">
+        <div class="card__media">
+          <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+          <div class="card__badges">
+            {% if p.old_price %}<span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+          </div>
+          <div class="card__stockbar"><span style="width:{{ [p.sold/(p.sold+p.stock+1)*100|round|int, 100]|min }}%"></span></div>
+        </div>
+        <div class="card__body">
+          <div class="rating-row">★ {{ p.sold }} sold</div>
+          <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+          <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.ship_time }}</span></div>
+          <div class="price-row">
+            <span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span>
+            <span class="card__discount">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>
+          </div>
+          <div class="card__actions">
+            <form method="post" action="{{ url_for('cart_add') }}">
+              <input type="hidden" name="product_id" value="{{ p.id }}">
+              <input type="hidden" name="qty" value="{{ p.moq }}">
+              <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+            </form>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+          </div>
+          {% include "_mkt_card.html" %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="flash">
+  <div class="container">
+    <div class="flash">
+      <div class="flash__head">
+        <div style="display:flex;gap:14px;align-items:center">
+          <span class="flash__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span>
+          <div>
+            <h2 style="font-size:24px">Flash Wholesale Sale</h2>
+            <p style="color:var(--slate-500);font-size:14px">Hurry — stock is moving fast. Order in bulk before it's gone.</p>
+          </div>
+        </div>
+        <div class="countdown" id="countdown">
+          <div class="countdown__unit"><div class="countdown__num" id="cdD">00</div><div class="countdown__label">Days</div></div>
+          <span class="countdown__sep">:</span>
+          <div class="countdown__unit"><div class="countdown__num" id="cdH">00</div><div class="countdown__label">Hours</div></div>
+          <span class="countdown__sep">:</span>
+          <div class="countdown__unit"><div class="countdown__num" id="cdM">00</div><div class="countdown__label">Mins</div></div>
+          <span class="countdown__sep">:</span>
+          <div class="countdown__unit"><div class="countdown__num" id="cdS">00</div><div class="countdown__label">Secs</div></div>
+        </div>
+      </div>
+      <div class="grid">
+        {% for p in flash_products %}
+        <article class="card">
+          <div class="card__media">
+            <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+          <button class="wish-btn" type="button" data-wish data-pid="{{ p.id }}" aria-label="Add to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+            <div class="card__badges"><span class="badge badge-hot">Flash</span></div>
+            <div class="card__stockbar"><span style="width:{{ [p.sold/(p.sold+p.stock+1)*100|round|int, 100]|min }}%;background:linear-gradient(90deg,var(--accent-500),var(--accent-600))"></span></div>
+          </div>
+          <div class="card__body">
+            <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+            <div class="card__meta"><span>{{ p.stock }} units left</span><span>{{ (p.sold/(p.sold+p.stock+1)*100)|round|int }}% claimed</span></div>
+            <div class="price-row">
+              <span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span>
+            </div>
+            <div class="card__actions">
+              <form method="post" action="{{ url_for('cart_add') }}">
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                <input type="hidden" name="qty" value="{{ p.moq }}">
+                <button class="btn btn-accent btn-sm" style="width:100%">Add to Cart</button>
+              </form>
+              <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">Buy Now</a>
+            </div>
+            {% include "_mkt_card.html" %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="bestsellers">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Customer favorites</span>
+        <h2>Best Sellers</h2>
+        <p>High-demand wholesale products reordered by retailers month after month.</p>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('products', sort='popular') }}">View All</a>
+    </div>
+    <div class="grid">
+      {% for p in deals[:4] %}
+      <article class="card">
+        <div class="card__media">
+          <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+          <div class="card__badges"><span class="badge badge-soft">{{ p.sold }} sold</span></div>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+          <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.ship_time }}</span></div>
+          <div class="price-row"><span class="card__price">${{ '%.2f'|format(p.price) }}</span></div>
+          <div class="card__actions">
+            <form method="post" action="{{ url_for('cart_add') }}">
+              <input type="hidden" name="product_id" value="{{ p.id }}">
+              <input type="hidden" name="qty" value="{{ p.moq }}">
+              <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+            </form>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+          </div>
+          {% include "_mkt_card.html" %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="suppliers">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Verified partners</span>
+        <h2>Find Trusted Suppliers</h2>
+        <p>Every supplier is identity-verified, business-checked and performance-rated.</p>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('suppliers_page') }}">Explore All Suppliers</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+      {% for s in suppliers %}
+      <article class="supplier-card">
+        <div class="supplier-card__avatar">{{ s.company_name[:2]|upper }}
+          {% if s.verification_status == 'verified' %}<span class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>{% endif %}
+        </div>
+        <h3 class="supplier-card__name">{{ s.company_name }}</h3>
+        <div class="supplier-card__country">{{ s.country }} · {{ s.years_in_business }} yrs</div>
+        <div class="supplier-card__stats">
+          <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ '%.1f'|format(s.rating_avg) }} ★</div><div class="supplier-card__stat-label">Rating</div></div>
+          <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ s.response_rate }}%</div><div class="supplier-card__stat-label">Response</div></div>
+        </div>
+        <div class="supplier-card__actions">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('supplier_store', slug=s.slug) }}">View Store</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="new-arrivals">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Fresh inventory</span>
+        <h2>New Arrivals</h2>
+        <p>Just listed — new products and suppliers added this week.</p>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('products', sort='newest') }}">View All New</a>
+    </div>
+    <div class="grid">
+      {% for p in new_arrivals[:8] %}
+      <article class="card">
+        <div class="card__media">
+          <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+          <div class="card__badges"><span class="badge badge-new">New</span></div>
+        </div>
+        <div class="card__body">
+          <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+          <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.ship_time }}</span></div>
+          <div class="price-row"><span class="card__price">${{ '%.2f'|format(p.price) }}</span></div>
+          <div class="card__actions">
+            <form method="post" action="{{ url_for('cart_add') }}">
+              <input type="hidden" name="product_id" value="{{ p.id }}">
+              <input type="hidden" name="qty" value="{{ p.moq }}">
+              <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+            </form>
+            <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+          </div>
+          {% include "_mkt_card.html" %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-head" style="flex-direction:column;align-items:center;text-align:center">
+      <span class="eyebrow" style="justify-content:center">The TradeLink advantage</span>
+      <h2>Why Businesses Choose TradeLink</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h3>Verified Suppliers</h3><p>Every supplier passes identity, license and audit checks before listing.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><h3>Competitive Wholesale Pricing</h3><p>Factory-direct prices with transparent tiered discounts as volume grows.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Secure Payments</h3><p>Escrow-backed transactions released only when you confirm receipt and quality.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12v10H4V12"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/></svg></div><h3>Bulk Discounts</h3><p>Volume-based pricing tables on every product — order more, save more.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17h14V7H5z"/><path d="M5 17v3h14v-3"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></div><h3>Global Shipping</h3><p>Air, sea and rail freight to 120+ countries with full tracking.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div><h3>Buyer Protection</h3><p>Trade Assurance covers quality, shipping time and refunds on every order.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div><h3>Fast Supplier Communication</h3><p>In-platform messaging with quote requests and instant alerts.</p></div>
+      <div class="feature-card"><div class="feature-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11h4"/><path d="M10 15h4"/></svg></div><h3>Business-Friendly Ordering</h3><p>Re-order lists, saved carts, purchase-order exports and net-30 options.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="become-supplier" style="padding-top:0">
+  <div class="container">
+    <div class="cta-banner">
+      <div>
+        <h2>Are you a manufacturer or distributor?</h2>
+        <p>Join 12,500+ verified suppliers growing their export business with TradeLink. Get your store live in minutes.</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:24px">
+          <a class="btn btn-accent btn-lg" href="{{ url_for('register', role='supplier') }}">Become a Supplier</a>
+          <a class="btn btn-lg" style="border:1.5px solid rgba(255,255,255,.4);color:#fff" href="{{ url_for('suppliers_page') }}">Explore Supplier Stores</a>
+        </div>
+      </div>
+      <div class="cta-banner__stats">
+        <div class="cta-banner__stat"><div class="cta-banner__stat-value">12K+</div><div class="cta-banner__stat-label">Active Suppliers</div></div>
+        <div class="cta-banner__stat"><div class="cta-banner__stat-value">2-4</div><div class="cta-banner__stat-label">Days to Approval</div></div>
+        <div class="cta-banner__stat"><div class="cta-banner__stat-value">24/7</div><div class="cta-banner__stat-label">Support</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="testimonials">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Success stories</span>
+        <h2>Trusted by Growing Businesses</h2>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+      {% for r in reviews[:6] %}
+      <article class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <div class="stars">★★★★★</div>
+        <p style="font-size:14px;color:var(--slate-600);font-style:italic;line-height:1.7">“{{ r.comment }}”</p>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:auto">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--primary-100);color:var(--primary-700);display:grid;place-items:center;font-weight:700">{{ r.name[:2]|upper }}</div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--slate-900)">{{ r.name }}</div>
+            <div style="font-size:12px;color:var(--slate-400)">Ordered: {{ r.product_name }}</div>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="newsletter" style="padding-bottom:0">
+  <div class="container">
+    <div class="newsletter">
+      <h2 style="color:#fff;font-size:clamp(22px,2.6vw,32px);margin-bottom:10px">Get Wholesale Deals in Your Inbox</h2>
+      <p style="color:rgba(255,255,255,.7);margin-bottom:24px">Weekly price drops, new suppliers and bulk-buy opportunities. No spam.</p>
+      <form method="post" action="#" onsubmit="toast('Subscribed! Check your inbox.');this.reset();return false" style="display:flex;gap:10px;max-width:460px;margin:0 auto">
+        <input type="email" required placeholder="Your work email" style="flex:1;padding:13px 18px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;outline:none" aria-label="Email">
+        <button class="btn btn-primary" type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  var end=Date.now()+(2*86400+14*3600+32*60)*1000;
+  function tick(){
+    var d=Math.max(0,end-Date.now());
+    var dd=Math.floor(d/86400000);d-=dd*86400000;
+    var hh=Math.floor(d/3600000);d-=hh*3600000;
+    var mm=Math.floor(d/60000);d-=mm*60000;
+    var ss=Math.floor(d/1000);
+    document.getElementById('cdD').textContent=String(dd).padStart(2,'0');
+    document.getElementById('cdH').textContent=String(hh).padStart(2,'0');
+    document.getElementById('cdM').textContent=String(mm).padStart(2,'0');
+    document.getElementById('cdS').textContent=String(ss).padStart(2,'0');
+  }
+  tick();setInterval(tick,1000);
+})();
+</script>
+{% endblock %}

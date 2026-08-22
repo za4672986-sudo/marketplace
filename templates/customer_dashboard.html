@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>My Dashboard</span>
+    </nav>
+    <h1>Welcome back, {{ g.user.name }}</h1>
+    <p>Track orders, manage quotes and reorder your favorites.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_dash_sidebar.html" %}
+    <div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg></div><div class="stat-card__value" data-count="{{ stats.orders }}">{{ stats.orders }}</div><div class="stat-card__label">Total Orders</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="stat-card__value" data-count="{{ stats.pending }}">{{ stats.pending }}</div><div class="stat-card__label">Pending Orders</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8"/><path d="M8 14h5"/><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg></div><div class="stat-card__value" data-count="{{ stats.quotes }}">{{ stats.quotes }}</div><div class="stat-card__label">Quote Requests</div></div>
+        <div class="stat-card"><div class="stat-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div class="stat-card__value" data-count="{{ stats.wishlist }}">{{ stats.wishlist }}</div><div class="stat-card__label">Wishlist Items</div></div>
+      </div>
+
+      <div class="panel">
+        <h3>Recent Orders</h3>
+        {% if recent %}
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for o in recent %}
+              <tr>
+                <td><b>{{ o.order_number }}</b></td>
+                <td>{{ o.created_at[:10] }}</td>
+                <td>${{ '%.2f'|format(o.total) }}</td>
+                <td><span class="badge {% if o.status == 'delivered' %}badge-verified{% else %}badge-soft{% endif %}">{{ ORDER_LABELS[o.status] }}</span></td>
+                <td><a class="btn btn-outline btn-sm" href="{{ url_for('order_detail', order_id=o.id) }}">Track</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty"><h3>No orders yet</h3><p>Explore wholesale products to place your first order.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

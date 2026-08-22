@@ -1,0 +1,53 @@
+﻿{% extends "base.html" %}
+{% block title %}Quote Requests â€” TradeLink Supplier{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Quote Requests</span>
+    </nav>
+    <h1>Quote Requests</h1>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_supplier_sidebar.html" %}
+    <div>
+
+      {% if rows %}
+      {% for q in rows %}
+      <div class="quote-card">
+        <div class="quote-card__head">
+          <div>
+            <div class="quote-card__product">{{ q.product_name }}</div>
+            <div style="font-size:12.5px;color:var(--slate-400)">From: {{ q.buyer_name }} ({{ q.company or 'Individual' }}) Â· {{ q.created_at[:10] }}</div>
+          </div>
+          <span class="badge {% if q.status == 'responded' %}badge-verified{% elif q.status == 'pending' %}badge-pending{% else %}badge-soft{% endif %}">{{ q.status|title }}</span>
+        </div>
+        <div class="quote-card__meta">
+          <div><b>Qty:</b> {{ q.qty }} units</div>
+          <div><b>Target price:</b> {% if q.target_price %}${{ '%.2f'|format(q.target_price) }}{% else %}â€”{% endif %}</div>
+          <div><b>Destination:</b> {{ q.destination or 'â€”' }}</div>
+          <div><b>Delivery by:</b> {{ q.delivery_date or 'â€”' }}</div>
+        </div>
+        {% if q.requirements %}<p style="font-size:13.5px;color:var(--slate-500);margin-bottom:10px"><b>Requirements:</b> {{ q.requirements }}</p>{% endif %}
+        {% if q.response %}
+        <div class="quote-card__response"><b>Your response:</b> {{ q.response }}</div>
+        {% else %}
+        <form method="post" action="{{ url_for('supplier_quote_respond', qid=q.id) }}" style="display:grid;gap:10px;margin-top:12px">
+          <textarea class="form-control" name="response" placeholder="Your quote offer, terms, sample availability..." required></textarea>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" name="status" value="responded" type="submit">Send Response</button>
+            <button class="btn btn-outline" name="status" value="closed" type="submit">Decline</button>
+          </div>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="empty"><h3>No quote requests</h3><p>Buyers' quote requests will appear here for you to respond to.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

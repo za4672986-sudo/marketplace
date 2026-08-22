@@ -1,0 +1,52 @@
+﻿{% extends "base.html" %}
+{% block title %}Supplier Orders â€” TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Orders</span>
+    </nav>
+    <h1>Orders</h1>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_supplier_sidebar.html" %}
+    <div>
+
+      {% if rows %}
+      <div style="display:flex;flex-direction:column;gap:16px">
+        {% for r in rows %}
+        <div class="quote-card">
+          <div class="quote-card__head">
+            <div>
+              <div class="quote-card__product">{{ r.product_name }} <span style="font-weight:400;color:var(--slate-400)">Ã— {{ r.qty }}</span></div>
+              <div style="font-size:12.5px;color:var(--slate-400)">Order {{ r.order_number }} Â· {{ r.buyer }} Â· {{ r.created_at[:10] }}</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <b style="color:var(--slate-900)">${{ '%.2f'|format(r.item_total) }}</b>
+              <span class="badge {% if r.status == 'delivered' %}badge-verified{% elif r.status in ('shipped','in_transit') %}badge-new{% else %}badge-soft{% endif %}">{{ ORDER_LABELS[r.status] }}</span>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('supplier_order_status', oid=r.id) }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label class="form-hint" style="margin:0">Update status:</label>
+            <select name="status" class="form-control" style="width:auto;padding:9px 14px">
+              {% for s in ORDER_FLOW %}
+              <option value="{{ s }}" {% if s == r.status %}selected{% endif %}>{{ ORDER_LABELS[s] }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Update</button>
+            {% if r.payment_status == 'pending' %}
+            <span class="badge badge-pending">Payment pending</span>
+            {% endif %}
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><h3>No orders yet</h3><p>Orders from buyers will appear here.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

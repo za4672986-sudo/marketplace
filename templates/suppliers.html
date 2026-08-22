@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Find Trusted Suppliers — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Suppliers</span>
+    </nav>
+    <h1>Find Trusted Suppliers</h1>
+    <p>Every supplier is identity-verified, business-checked and performance-rated.</p>
+    <form method="get" class="band-search">
+      <input class="form-control" name="q" placeholder="Search supplier name..." value="{{ q }}" style="flex:1;min-width:220px">
+      <select class="form-control" name="country" style="max-width:220px" onchange="this.form.submit()">
+        <option value="">All countries</option>
+        {% for c in countries %}
+        <option value="{{ c.country }}" {% if country == c.country %}selected{% endif %}>{{ c.country }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-primary" type="submit">Search</button>
+    </form>
+    <div class="band-stats">
+      <div class="band-stat"><b><em>{{ items|length }}</em>+</b><span>Suppliers shown</span></div>
+      <div class="band-stat"><b><em>12.5K</em>+</b><span>Verified suppliers</span></div>
+      <div class="band-stat"><b><em>98.2</em>%</b><span>Avg. response rate</span></div>
+    </div>
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+
+  {% if items %}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+    {% for s in items %}
+    <article class="supplier-card">
+      <div class="supplier-card__avatar">{{ s.company_name[:2]|upper }}
+        {% if s.verification_status == 'verified' %}<span class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>{% endif %}
+      </div>
+      <h3 class="supplier-card__name">{{ s.company_name }}</h3>
+      <div class="supplier-card__country">{{ s.country }} · {{ s.years_in_business }} yrs in business</div>
+      <div class="supplier-card__stats">
+        <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ '%.1f'|format(s.rating_avg or 4.5) }} ★</div><div class="supplier-card__stat-label">Rating</div></div>
+        <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ s.response_rate }}%</div><div class="supplier-card__stat-label">Response rate</div></div>
+        <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ s.response_time }}</div><div class="supplier-card__stat-label">Response time</div></div>
+        <div class="supplier-card__stat"><div class="supplier-card__stat-value">{{ s.orders_completed|round(-3)|int }}K</div><div class="supplier-card__stat-label">Orders</div></div>
+      </div>
+      <div style="font-size:12px;color:var(--slate-500);margin-bottom:14px">
+        <span>{{ s.business_type }}</span> · <span>{{ s.certifications or 'No certs listed' }}</span>
+      </div>
+      <div class="supplier-card__actions">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('supplier_store', slug=s.slug) }}">View Store</a>
+        <div style="display:flex;gap:7px">
+          <a class="btn btn-outline btn-sm" style="flex:1" href="{{ url_for('messages') }}">Contact</a>
+          <a class="btn btn-outline btn-sm" style="flex:1" href="{{ url_for('supplier_store', slug=s.slug) }}#products">Request Quote</a>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><h3>No suppliers found</h3><p>Try different search terms.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

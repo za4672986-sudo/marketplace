@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{% if q %}Search: {{ q }} — TradeLink{% elif cat_slug %}Products — TradeLink{% else %}All Wholesale Products — TradeLink{% endif %}{% endblock %}
+{% block content %}
+<div class="page-band">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span>
+      {% if cat_slug %}<a href="{{ url_for('products') }}">Products</a><span class="sep">/</span><span>{{ cat_slug|replace('-', ' ')|title }}</span>
+      {% else %}<span>All Products</span>{% endif %}
+    </nav>
+    <h1>
+      {% if q %}Results for “{{ q }}”{% elif cat_slug %}{{ cat_slug|replace('-', ' ')|title }}{% else %}All Wholesale Products{% endif %}
+    </h1>
+    <p>{% if q %}Search results across {{ total }} wholesale products.{% elif cat_slug %}Verified bulk inventory in this category, priced by volume.{% else %}Factory-direct wholesale pricing with transparent tiered discounts.{% endif %}</p>
+    <div class="band-stats">
+      <div class="band-stat"><b><em>{{ total }}</em>+</b><span>Products</span></div>
+      <div class="band-stat"><b><em>{{ cats|length }}</em></b><span>Categories</span></div>
+      <div class="band-stat"><b><em>12.5K</em>+</b><span>Verified suppliers</span></div>
+      <div class="band-stat"><b><em>120</em>+</b><span>Countries served</span></div>
+    </div>
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  <div class="toolbar">
+    <div class="toolbar__count"><b>{{ total }}</b> products found</div>
+    <form method="get" class="toolbar__sort">
+      {% if cat_slug %}<input type="hidden" name="cat" value="{{ cat_slug }}">{% endif %}
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      {% if verified_only %}<input type="hidden" name="verified" value="1">{% endif %}
+      {% if in_stock %}<input type="hidden" name="stock" value="1">{% endif %}
+      <label>Sort by</label>
+      <select name="sort" class="form-control" onchange="this.form.submit()">
+        <option value="recommended" {% if sort=='recommended' %}selected{% endif %}>Recommended</option>
+        <option value="newest" {% if sort=='newest' %}selected{% endif %}>Newest</option>
+        <option value="price_asc" {% if sort=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_desc" {% if sort=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+        <option value="rating" {% if sort=='rating' %}selected{% endif %}>Best Rated</option>
+        <option value="popular" {% if sort=='popular' %}selected{% endif %}>Most Popular</option>
+        <option value="discount" {% if sort=='discount' %}selected{% endif %}>Biggest Discount</option>
+      </select>
+    </form>
+  </div>
+
+  <div style="display:grid;grid-template-columns:230px 1fr;gap:28px;align-items:start">
+    <!-- Filters -->
+    <aside class="panel filter-card">
+      <div class="filter-card__title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>Filters</div>
+      <form method="get" id="filterForm">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <div class="form-group">
+          <label>Category</label>
+          <select name="cat" class="form-control" onchange="this.form.submit()">
+            <option value="">All categories</option>
+            {% for c in cats %}
+            <option value="{{ c.slug }}" {% if cat_slug==c.slug %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Price range (unit)</label>
+          <div style="display:flex;gap:8px">
+            <input type="number" name="min" class="form-control" placeholder="Min" value="{{ min_price or '' }}">
+            <input type="number" name="max" class="form-control" placeholder="Max" value="{{ max_price or '' }}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+            <input type="checkbox" name="verified" value="1" {% if verified_only %}checked{% endif %} onchange="this.form.submit()">
+            Verified suppliers only
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;margin-top:8px">
+            <input type="checkbox" name="stock" value="1" {% if in_stock %}checked{% endif %} onchange="this.form.submit()">
+            In stock only
+          </label>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Apply Filters</button>
+        <a href="{{ url_for('products') }}" class="btn btn-outline btn-block" style="margin-top:8px">Reset</a>
+      </form>
+    </aside>
+
+    <!-- Results -->
+    <div>
+      {% if items %}
+      <div class="grid">
+        {% for p in items %}
+        <article class="card">
+          <div class="card__media">
+            <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+            <button class="wish-btn" type="button" data-wish data-pid="{{ p.id }}" aria-label="Add to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+            <div class="card__badges">
+              {% if p.old_price %}<span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+              {% if p.verification_status == 'verified' %}<span class="badge badge-verified">✓ Verified</span>{% endif %}
+            </div>
+          </div>
+          <div class="card__body">
+            <div class="rating-row"><span class="stars">★★★★★</span> <span>{{ '%.1f'|format(p.avg_rating or 4.5) }}</span></div>
+            <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+            <div class="card__supplier"><span>{{ p.company_name }} · {{ p.s_country }}</span></div>
+            <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.ship_time }}</span></div>
+            <div class="price-row">
+              <span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span>
+              {% if p.old_price %}<span class="card__discount">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+            </div>
+            <div class="card__actions">
+              <form method="post" action="{{ url_for('cart_add') }}">
+                <input type="hidden" name="product_id" value="{{ p.id }}">
+                <input type="hidden" name="qty" value="{{ p.moq }}">
+                <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+              </form>
+              <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+            </div>
+            {% include "_mkt_card.html" %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('products', page=page-1, q=q, cat=cat_slug, sort=sort) }}">←</a>
+        {% endif %}
+        {% for i in range(1, ((total-1)//per_page)+2) %}
+          {% if i == page %}<span class="current">{{ i }}</span>
+          {% elif i < 8 %}<a href="{{ url_for('products', page=i, q=q, cat=cat_slug, sort=sort) }}">{{ i }}</a>{% endif %}
+        {% endfor %}
+        {% if page * per_page < total %}
+        <a href="{{ url_for('products', page=page+1, q=q, cat=cat_slug, sort=sort) }}">→</a>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

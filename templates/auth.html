@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Create Account' if mode == 'register' else 'Sign In' }} — TradeLink{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="auth-split anim-pop">
+    <div class="auth-panel">
+      <a href="{{ url_for('home') }}" class="logo">
+        <span class="logo__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M3 9l9 6 9-6"/></svg></span>
+        <span class="logo__text"><span class="logo__name">Trade<em>link</em></span><span class="logo__tag">Wholesale</span></span>
+      </a>
+      <h2>{% if mode == 'register' %}Your wholesale business starts here{% else %}Welcome back to the marketplace{% endif %}</h2>
+      <p>{% if mode == 'register' %}Create one account and unlock verified suppliers, tiered bulk pricing and in-platform ordering.{% else %}Sign in to access wholesale pricing, quotes and your dashboard.{% endif %}</p>
+      <div class="auth-features">
+        <div class="auth-feature">
+          <span class="auth-feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <div><b>Verified suppliers only</b><span>Every seller is identity-checked, business-audited and performance-rated before going live.</span></div>
+        </div>
+        <div class="auth-feature">
+          <span class="auth-feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span>
+          <div><b>Tiered wholesale pricing</b><span>Transparent MOQ-based price tables — order more, save more, no hidden fees.</span></div>
+        </div>
+        <div class="auth-feature">
+          <span class="auth-feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14V7H5z"/><path d="M5 17v3h14v-3"/><circle cx="7.5" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/></svg></span>
+          <div><b>Global shipping</b><span>Air, sea and rail freight to 120+ countries with full order tracking.</span></div>
+        </div>
+      </div>
+      <div class="auth-stats">
+        <div class="auth-stat"><b><em>48K</em>+</b><span>Buyers &amp; retailers</span></div>
+        <div class="auth-stat"><b><em>12.5K</em>+</b><span>Verified suppliers</span></div>
+        <div class="auth-stat"><b><em>240M</em>+</b><span>Products listed</span></div>
+      </div>
+    </div>
+
+    <div class="auth-form">
+      <div style="text-align:center;margin-bottom:8px">
+        <span class="logo__mark" style="margin:0 auto 14px;width:52px;height:52px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+        </span>
+      </div>
+      <h1 style="text-align:center">{{ 'Create your TradeLink account' if mode == 'register' else 'Welcome back' }}</h1>
+      <p class="sub" style="text-align:center">
+        {% if mode == 'register' %}Join thousands of buyers and suppliers on the global wholesale marketplace.{% else %}Sign in to access wholesale pricing and your dashboard.{% endif %}
+      </p>
+
+      <form method="post">
+        {% if mode == 'register' %}
+        <div class="form-group">
+          <label>Account type</label>
+          <div class="role-picker">
+            {% for r in ['customer', 'supplier'] %}
+            <label class="role-opt">
+              <input type="radio" name="role" value="{{ r }}" {% if request.args.get('role') == r %}checked{% elif loop.first and not request.args.get('role') %}checked{% endif %}>
+              {{ '🛒 Buyer' if r == 'customer' else '🏭 Supplier' }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="form-group"><label>Full name</label><input class="form-control" name="name" required></div>
+        <div class="form-group"><label>Company (optional)</label><input class="form-control" name="company"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Country</label>
+            <select class="form-control" name="country">
+              <option>United States</option><option>United Kingdom</option><option>Germany</option><option>France</option>
+              <option>India</option><option>China</option><option>Vietnam</option><option>Türkiye</option>
+              <option>UAE</option><option>Brazil</option><option>Nigeria</option><option>Australia</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Business type</label>
+            <select class="form-control" name="business_type">
+              <option>Manufacturer</option><option>Distributor</option><option>Wholesaler</option><option>Trader</option><option>Retailer</option>
+            </select>
+          </div>
+        </div>
+        {% endif %}
+        <div class="form-group"><label>Email</label><input class="form-control" type="email" name="email" required></div>
+        <div class="form-group"><label>Password</label><input class="form-control" type="password" name="password" required minlength="6"></div>
+        {% if mode == 'register' %}
+        <div class="form-group"><label>Confirm password</label><input class="form-control" type="password" name="password2" required minlength="6"></div>
+        {% endif %}
+        <button class="btn btn-primary btn-lg btn-block" type="submit">
+          {{ 'Create Account' if mode == 'register' else 'Sign In' }}
+        </button>
+      </form>
+      <p style="text-align:center;font-size:13px;color:var(--slate-400);margin-top:18px">
+        {% if mode == 'register' %}
+        Already have an account? <a href="{{ url_for('login') }}" style="color:var(--primary-600);font-weight:600">Sign in</a>
+        {% else %}
+        New to TradeLink? <a href="{{ url_for('register') }}" style="color:var(--primary-600);font-weight:600">Create account</a>
+        {% endif %}
+      </p>
+      <div style="background:var(--slate-50);border-radius:var(--r-md);padding:12px 16px;font-size:12px;color:var(--slate-500);margin-top:20px">
+        <b>Demo accounts:</b><br>
+        Buyer: buyer@meridian.com / buyer123<br>
+        Supplier: supplier@novatech.com / supplier123<br>
+        Admin: admin@tradelink.com / admin123
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

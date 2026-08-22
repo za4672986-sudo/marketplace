@@ -1,0 +1,34 @@
+{% set sup_items = [
+  ('supplier_dashboard', 'Overview', url_for('supplier_dashboard')),
+  ('supplier_products', 'Products', url_for('supplier_products')),
+  ('supplier_orders', 'Orders', url_for('supplier_orders')),
+  ('supplier_quotes', 'Quotes', url_for('supplier_quotes')),
+  ('supplier_coupons', 'Coupons', url_for('supplier_coupons')),
+  ('supplier_campaigns', 'Campaigns', url_for('supplier_campaigns')),
+  ('messages', 'Messages', url_for('messages')),
+  ('notifications', 'Notifications', url_for('notifications')),
+  ('logout', 'Sign Out', url_for('logout')),
+] %}
+<aside class="sidebar">
+  <div class="sidebar__head">
+    <div class="sidebar__head-name">{{ g.user.name }}</div>
+    <div class="sidebar__head-role">Supplier Dashboard</div>
+  </div>
+  {% for key, label, href in sup_items %}
+  <a href="{{ href }}" {% if request.endpoint == key %}class="active"{% endif %}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      {% if key == 'supplier_dashboard' %}<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+      {% elif key == 'supplier_products' %}<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><path d="M12 22.08V12"/>
+      {% elif key == 'supplier_orders' %}<path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11h4"/><path d="M10 15h4"/>
+      {% elif key == 'supplier_quotes' %}<path d="M8 10h8"/><path d="M8 14h5"/><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/>
+      {% elif key == 'supplier_coupons' %}<path d="M20 12l-8-8H4v8l8 8 8-8z"/><circle cx="8.5" cy="8.5" r="1.5"/>
+      {% elif key == 'supplier_campaigns' %}<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      {% elif key == 'messages' %}<path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+      {% elif key == 'notifications' %}<path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+      {% else %}<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>
+      {% endif %}
+    </svg>
+    {{ label }}
+  </a>
+  {% endfor %}
+</aside>

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}About Us — TradeLink Wholesale{% endblock %}
+{% block content %}
+<div class="page-band">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>About Us</span>
+    </nav>
+    <span class="eyebrow" style="color:var(--accent-300)">About TradeLink</span>
+    <h1 style="margin:10px 0 10px">The wholesale marketplace built for serious buyers and suppliers</h1>
+    <p>TradeLink connects verified manufacturers and wholesalers with retailers, distributors, and growing businesses — with transparent tiered pricing, bulk quoting, and in-platform ordering.</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:860px">
+
+  <div class="panel" style="margin-bottom:24px">
+    <h2 style="font-size:20px">Our mission</h2>
+    <p style="font-size:14px;color:var(--slate-600);line-height:1.7;margin:0">
+      Sourcing wholesale inventory should be as simple as buying retail. We remove the guesswork: every supplier on TradeLink is identity-checked and business-verified, every product carries clear MOQs and tiered pricing, and every order is tracked from placement to delivery. Buyers get market-benchmarked pricing — including one-click comparison against Alibaba, DHGate, and Made-in-China — while suppliers get direct access to qualified, order-ready buyers.
+    </p>
+  </div>
+
+  <div class="stat-grid" style="margin-bottom:24px">
+    <div class="stat-card"><div class="stat-card__value">48K+</div><div class="stat-card__label">Buyers &amp; retailers</div></div>
+    <div class="stat-card"><div class="stat-card__value">12.5K+</div><div class="stat-card__label">Verified suppliers</div></div>
+    <div class="stat-card"><div class="stat-card__value">240M+</div><div class="stat-card__label">Products listed</div></div>
+    <div class="stat-card"><div class="stat-card__value">30+</div><div class="stat-card__label">Countries served</div></div>
+  </div>
+
+  <div class="panel" style="margin-bottom:24px">
+    <h2 style="font-size:20px">What we stand for</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div><b style="font-size:14px">Verified suppliers</b><p style="font-size:13px;color:var(--slate-500);margin:4px 0 0">Business registration, certifications, and identity are reviewed before a store goes live.</p></div>
+      <div><b style="font-size:14px">Transparent pricing</b><p style="font-size:13px;color:var(--slate-500);margin:4px 0 0">MOQ-based tier pricing is published up front — no hidden minimums or surprise markups.</p></div>
+      <div><b style="font-size:14px">Bulk quoting</b><p style="font-size:13px;color:var(--slate-500);margin:4px 0 0">Negotiate large-volume pricing in-platform with tracked responses and delivery dates.</p></div>
+      <div><b style="font-size:14px">Buyer protection</b><p style="font-size:13px;color:var(--slate-500);margin:4px 0 0">Payments are confirmed against your order, with clear refund and dispute policies.</p></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 style="font-size:20px">Contact</h2>
+    <p style="font-size:13.5px;color:var(--slate-500);margin:0 0 12px">Questions, partnership ideas, or feedback? We read everything.</p>
+    <a class="btn btn-primary" href="{{ url_for('contact') }}">Contact us →</a>
+  </div>
+</div>
+{% endblock %}

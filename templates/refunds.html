@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Returns &amp; Refunds — TradeLink Wholesale{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Returns &amp; Refunds</span>
+    </nav>
+    <h1>Returns &amp; Refunds</h1>
+    <p>Last updated: {{ now.strftime('%Y-%m-%d') }} · TradeLink Wholesale</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:820px">
+
+  <div class="panel" style="margin-bottom:16px"><h2 style="font-size:18px">1. Wholesale orders</h2>
+    <p style="font-size:13.5px;color:var(--slate-600);line-height:1.7">Because orders are business-to-business and often produced to order, standard wholesale purchases are non-refundable once they enter production. Your quote and order documents state production and delivery terms; please review them before paying.</p></div>
+
+  <div class="panel" style="margin-bottom:16px"><h2 style="font-size:18px">2. When you can get a refund</h2>
+    <p style="font-size:13.5px;color:var(--slate-600);line-height:1.7">
+      • Order cancelled by the supplier before shipment — full refund.<br>
+      • Items received damaged, defective, or not matching the agreed specification — refund or replacement at your choice, within 14 days of delivery.<br>
+      • Payment made but order not fulfilled within the agreed delivery window (excluding force majeure) — full refund.<br>
+      • Incorrectly charged amount — refund of the difference.
+    </p></div>
+
+  <div class="panel" style="margin-bottom:16px"><h2 style="font-size:18px">3. How to request one</h2>
+    <p style="font-size:13.5px;color:var(--slate-600);line-height:1.7">Message the supplier from your order page with your order number, photos of any issue, and the outcome you want (refund/replacement). If the supplier does not respond within 5 business days, escalate via <a href="{{ url_for('contact') }}">contact form</a> and we will review the case.</p></div>
+
+  <div class="panel" style="margin-bottom:16px"><h2 style="font-size:18px">4. Refund timing</h2>
+    <p style="font-size:13.5px;color:var(--slate-600);line-height:1.7">Approved refunds are returned via the original payment channel within 10 business days of approval. Wallet and mobile-money refunds (EasyPaisa, JazzCash, bKash, GCash, M-PESA) are typically visible within 24–72 hours depending on the provider.</p></div>
+
+  <div class="panel"><h2 style="font-size:18px">5. Disputes</h2>
+    <p style="font-size:13.5px;color:var(--slate-600);line-height:1.7">If a dispute can't be resolved between buyer and supplier, TradeLink's marketplace team will arbitrate using order records, messages, and delivery evidence. Our decision is final except where law provides otherwise.</p></div>
+</div>
+{% endblock %}

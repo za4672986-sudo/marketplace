@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}My Orders — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>My Orders</span>
+    </nav>
+    <h1>My Orders</h1>
+    {% if orders %}<p>{{ orders|length }} order{% if orders|length != 1 %}s{% endif %} placed.</p>{% else %}<p>Your order history appears here.</p>{% endif %}
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  {% if orders %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Order #</th><th>Date</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><b>{{ o.order_number }}</b></td>
+          <td>{{ o.created_at[:10] }}</td>
+          <td>${{ '%.2f'|format(o.total) }}</td>
+          <td>{{ o.payment_method|replace('_', ' ')|title }}</td>
+          <td><span class="badge {% if o.status == 'delivered' %}badge-verified{% elif o.status in ('shipped','in_transit') %}badge-new{% else %}badge-soft{% endif %}">{{ ORDER_LABELS[o.status] }}</span></td>
+          <td><a class="btn btn-outline btn-sm" href="{{ url_for('order_detail', order_id=o.id) }}">Track</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/><path d="M10 11h4"/><path d="M10 15h4"/></svg>
+    <h3>No orders yet</h3>
+    <p>Place your first wholesale order to get started.</p>
+    <a class="btn btn-primary" href="{{ url_for('products') }}" style="margin-top:16px">Shop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

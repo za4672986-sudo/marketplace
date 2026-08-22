@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Product' if product else 'Add Product' }} — TradeLink Supplier{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><a href="{{ url_for('supplier_products') }}">My Products</a><span class="sep">/</span>
+      <span>{{ 'Edit: ' + product.name if product else 'Add Product' }}</span>
+    </nav>
+    <h1>{{ 'Edit Product' if product else 'Add New Product' }}</h1>
+    <p>{% if product %}Update your listing — changes go live immediately.{% else %}List a new product on the wholesale marketplace.{% endif %}</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:800px">
+  <h1 style="font-size:26px;margin-bottom:20px">{{ 'Edit Product' if product else 'Add New Product' }}</h1>
+
+  {% if not product %}
+  <div class="alert alert-info">Products are reviewed by the marketplace team before going live.</div>
+  {% endif %}
+
+  <form method="post" class="panel">
+    <div class="form-group"><label>Product name *</label><input class="form-control" name="name" value="{{ product.name if product else '' }}" required></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label>
+        <select class="form-control" name="category_id">
+          {% for c in cats %}
+          <option value="{{ c.id }}" {% if product and product.category_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group"><label>SKU</label><input class="form-control" name="sku" value="{{ product.sku if product else '' }}" placeholder="e.g. TL-2001"></div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea class="form-control" name="description" placeholder="Describe materials, usage, target buyers...">{{ product.description if product else '' }}</textarea></div>
+    <div class="form-group"><label>Specifications</label><textarea class="form-control" name="specifications" placeholder="One per line: Bluetooth 5.3 | ANC | 30h battery">{{ product.specifications if product else '' }}</textarea></div>
+
+    <div class="form-row">
+      <div class="form-group"><label>Wholesale price (USD) *</label><input class="form-control" type="number" step="0.01" name="price" value="{{ product.price if product else '' }}" required></div>
+      <div class="form-group"><label>Compare-at price (optional)</label><input class="form-control" type="number" step="0.01" name="old_price" value="{{ product.old_price if product and product.old_price else '' }}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>MOQ (min order qty) *</label><input class="form-control" type="number" name="moq" value="{{ product.moq if product else 50 }}" min="1"></div>
+      <div class="form-group"><label>Stock quantity *</label><input class="form-control" type="number" name="stock" value="{{ product.stock if product else 0 }}" min="0"></div>
+    </div>
+
+    <h3 style="font-size:16px;margin:20px 0 12px">Bulk Pricing Tiers</h3>
+    <div class="form-row" style="margin-bottom:14px">
+      <div class="form-group"><label>Tier 2 price (2× MOQ)</label><input class="form-control" type="number" step="0.01" name="tier2" placeholder="auto: -15%"></div>
+      <div class="form-group"><label>Tier 3 price (10× MOQ)</label><input class="form-control" type="number" step="0.01" name="tier3" placeholder="auto: -30%"></div>
+    </div>
+
+    <div class="form-group"><label>Shipping time</label><input class="form-control" name="ship_time" value="{{ product.ship_time if product else 'Ships in 3-5 days' }}"></div>
+
+    <div style="display:flex;gap:10px;margin-top:24px">
+      <button class="btn btn-primary btn-lg" type="submit">{{ 'Save Changes' if product else 'Create Product' }}</button>
+      <a class="btn btn-outline btn-lg" href="{{ url_for('supplier_products') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

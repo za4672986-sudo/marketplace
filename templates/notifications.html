@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Notifications — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Notifications</span>
+    </nav>
+    <h1>Notifications</h1>
+    <p>Order updates, quote responses and new messages.</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:800px">
+  {% if rows %}
+  {% for n in rows %}
+  <div class="notif-item">
+    <div class="notif-item__icon">
+      {% if n.type == 'order' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg>
+      {% elif n.type == 'quote' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 10h8"/><path d="M8 14h5"/></svg>
+      {% elif n.type == 'message' %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      {% else %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      {% endif %}
+    </div>
+    <div style="flex:1">
+      <div class="notif-item__title">{{ n.title }}</div>
+      <div class="notif-item__body">{{ n.body }}</div>
+      {% if n.link %}<a class="btn btn-outline btn-sm" style="margin-top:8px" href="{{ n.link }}">View</a>{% endif %}
+    </div>
+    <div class="notif-item__time">{{ n.created_at[:16] }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty"><h3>No notifications</h3><p>You're all caught up.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

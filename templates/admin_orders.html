@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}All Orders — Admin{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>All Orders</span>
+    </nav>
+    <h1>All Orders</h1>
+    <p>Every order across the marketplace.</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Order</th><th>Buyer</th><th>Date</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for o in rows %}
+        <tr>
+          <td><b>{{ o.order_number }}</b></td>
+          <td>{{ o.buyer }}</td>
+          <td>{{ o.created_at[:10] }}</td>
+          <td>${{ '%.2f'|format(o.total) }}</td>
+          <td>{{ o.payment_method|replace('_', ' ')|title }} <span class="badge {% if o.payment_status == 'confirmed' %}badge-verified{% else %}badge-pending{% endif %}">{{ o.payment_status }}</span></td>
+          <td><span class="badge badge-soft">{{ ORDER_LABELS[o.status] }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

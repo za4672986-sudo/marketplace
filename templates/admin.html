@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Admin Console</span>
+    </nav>
+    <h1>Marketplace Overview</h1>
+    <p>Platform revenue, approvals and activity at a glance.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sidebar__head">
+        <div class="sidebar__head-name">TradeLink Admin</div>
+        <div class="sidebar__head-role">Marketplace Console</div>
+      </div>
+      <a href="{{ url_for('admin_panel') }}" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</a>
+      <a href="{{ url_for('admin_orders') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg>All Orders</a>
+      <a href="{{ url_for('suppliers_page') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Suppliers</a>
+      <a href="{{ url_for('products') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>Products</a>
+      <a href="{{ url_for('notifications') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>Notifications</a>
+      <a href="{{ url_for('logout') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>Sign Out</a>
+    </aside>
+
+    <div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.revenue }}" data-prefix="$">{{ stats.revenue }}</div><div class="stat-card__label">Total Sales</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.orders }}">{{ stats.orders }}</div><div class="stat-card__label">Orders</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.customers }}">{{ stats.customers }}</div><div class="stat-card__label">Customers</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.suppliers }}">{{ stats.suppliers }}</div><div class="stat-card__label">Suppliers</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.products }}">{{ stats.products }}</div><div class="stat-card__label">Products</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.pending_orders }}">{{ stats.pending_orders }}</div><div class="stat-card__label">Pending Orders</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.pending_suppliers }}">{{ stats.pending_suppliers }}</div><div class="stat-card__label">Pending Suppliers</div></div>
+        <div class="stat-card"><div class="stat-card__value" data-count="{{ stats.pending_products }}">{{ stats.pending_products }}</div><div class="stat-card__label">Pending Products</div></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:20px">
+        <h3>Supplier Verification Queue ({{ pending_suppliers|length }})</h3>
+        {% if pending_suppliers %}
+        {% for s in pending_suppliers %}
+        <div style="display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--slate-100)">
+          <div class="supplier-card__avatar" style="margin:0;width:46px;height:46px;font-size:16px">{{ s.company_name[:2]|upper }}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">{{ s.company_name }}</div>
+            <div style="font-size:12px;color:var(--slate-400)">{{ s.country }} · {{ s.business_type }} · {{ s.years_in_business }} yrs · <b>{{ s.certifications or 'no certs' }}</b></div>
+          </div>
+          <span class="badge badge-pending">{{ s.verification_status|replace('_', ' ')|title }}</span>
+          <form method="post" action="{{ url_for('admin_supplier_status', sid=s.id) }}" style="display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" style="background:var(--success-500);color:#fff" name="status" value="verified">Approve</button>
+            <button class="btn btn-danger btn-sm" name="status" value="rejected">Reject</button>
+          </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="font-size:13.5px;color:var(--slate-400)">No pending supplier applications. ✓</p>
+        {% endif %}
+      </div>
+
+      <div class="panel" style="margin-bottom:20px">
+        <h3>Product Approval Queue ({{ pending_products|length }})</h3>
+        {% if pending_products %}
+        {% for p in pending_products %}
+        <div style="display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--slate-100)">
+          <div style="width:46px;height:46px;border-radius:10px;background:var(--slate-100);flex-shrink:0;display:grid;place-items:center;font-size:10px;color:var(--slate-400);font-weight:600;text-align:center">{{ p.name.split(' ')[:2]|join(' ') }}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700">{{ p.name }}</div>
+            <div style="font-size:12px;color:var(--slate-400)">{{ p.company_name }} · ${{ '%.2f'|format(p.price) }}/unit · MOQ {{ p.moq }}</div>
+          </div>
+          <form method="post" action="{{ url_for('admin_product_status', pid=p.id) }}" style="display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" style="background:var(--success-500);color:#fff" name="status" value="approved">Approve</button>
+            <button class="btn btn-danger btn-sm" name="status" value="rejected">Reject</button>
+          </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="font-size:13.5px;color:var(--slate-400)">No pending products. ✓</p>
+        {% endif %}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="panel">
+          <h3>Recent Orders</h3>
+          {% if recent_orders %}
+          <div style="display:flex;flex-direction:column;gap:8px">
+            {% for o in recent_orders %}
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--slate-100)">
+              <span><b>{{ o.order_number }}</b> · ${{ '%.2f'|format(o.total) }}</span>
+              <span class="badge badge-soft">{{ ORDER_LABELS[o.status] }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        <div class="panel">
+          <h3>Recent Users</h3>
+          {% if recent_users %}
+          <div style="display:flex;flex-direction:column;gap:8px">
+            {% for u in recent_users %}
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--slate-100)">
+              <span>{{ u.name }} <span style="color:var(--slate-400)">({{ u.company or '—' }})</span></span>
+              <span class="badge badge-soft">{{ u.role|title }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

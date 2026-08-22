@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}{{ s.company_name }} — Supplier Store{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:32px">
+  <div class="panel" style="margin-bottom:28px;padding:0;overflow:hidden">
+    <div style="height:140px;background:linear-gradient(120deg,var(--primary-700),var(--primary-900))"></div>
+    <div style="padding:24px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;position:relative">
+      <div class="supplier-card__avatar" style="margin-top:-56px;border:4px solid #fff;width:76px;height:76px;font-size:28px">{{ s.company_name[:2]|upper }}
+        {% if s.verification_status == 'verified' %}<span class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>{% endif %}
+      </div>
+      <div style="flex:1;min-width:200px">
+        <h1 style="font-size:24px">{{ s.company_name }}</h1>
+        <div style="font-size:13px;color:var(--slate-400);margin-bottom:8px">
+          {{ s.country }} · {{ s.years_in_business }} years in business · {{ s.business_type }}
+          {% if s.verification_status == 'verified' %}<span class="badge badge-verified" style="margin-left:8px">✓ Verified Supplier</span>
+          {% elif s.verification_status == 'pending' %}<span class="badge badge-pending">Verification pending</span>{% endif %}
+        </div>
+        <p style="font-size:14px;color:var(--slate-500);margin:0">{{ s.description }}</p>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:14px">
+          <div><b style="color:var(--slate-900)">{{ '%.1f'|format(s.rating_avg or 4.5) }}★</b><div style="font-size:11px;color:var(--slate-400)">Rating ({{ s.rating_count }})</div></div>
+          <div><b style="color:var(--slate-900)">{{ s.response_rate }}%</b><div style="font-size:11px;color:var(--slate-400)">Response rate</div></div>
+          <div><b style="color:var(--slate-900)">{{ s.response_time }}</b><div style="font-size:11px;color:var(--slate-400)">Response time</div></div>
+          <div><b style="color:var(--slate-900)">{{ s.orders_completed|round(-3)|int }}K+</b><div style="font-size:11px;color:var(--slate-400)">Orders completed</div></div>
+          <div><b style="color:var(--slate-900)">{{ s.certifications or '—' }}</b><div style="font-size:11px;color:var(--slate-400)">Certifications</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="{{ url_for('messages') }}">Contact Supplier</a>
+        <a class="btn btn-outline" href="{{ url_for('products') }}">Request Wholesale Quote</a>
+      </div>
+    </div>
+  </div>
+
+  {% if cats %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+    {% for c in cats %}
+    <a class="chip" href="{{ url_for('category', slug=c.slug) }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="section-head" id="products">
+    <div>
+      <span class="eyebrow">Store catalog</span>
+      <h2 style="font-size:24px">Products ({{ products|length }})</h2>
+    </div>
+  </div>
+
+  {% if products %}
+  <div class="grid">
+    {% for p in products %}
+    <article class="card">
+      <div class="card__media">
+        <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+        {% if p.old_price %}<div class="card__badges"><span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span></div>{% endif %}
+      </div>
+      <div class="card__body">
+        <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+        <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.stock }} in stock</span></div>
+        <div class="price-row"><span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span></div>
+        <div class="card__actions">
+          <form method="post" action="{{ url_for('cart_add') }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <input type="hidden" name="qty" value="{{ p.moq }}">
+            <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+          </form>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+        </div>
+        {% include "_mkt_card.html" %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><h3>No products yet</h3><p>Check back soon.</p></div>
+  {% endif %}
+
+  {% if reviews %}
+  <div class="section-head" style="margin-top:48px">
+    <div><span class="eyebrow">Reviews</span><h2 style="font-size:24px">What buyers say</h2></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+    {% for r in reviews %}
+    <div class="panel" style="display:flex;flex-direction:column;gap:8px">
+      <div class="stars">{% for i in range(r.rating) %}★{% endfor %}{% for i in range(5 - r.rating) %}☆{% endfor %}</div>
+      <p style="font-size:13.5px;color:var(--slate-600);margin:0">“{{ r.comment }}”</p>
+      <div style="font-size:12px;color:var(--slate-400);margin-top:auto">{{ r.name }} · on {{ r.product_name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

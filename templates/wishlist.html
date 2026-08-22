@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Wishlist — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Wishlist</span>
+    </nav>
+    <h1>My Wishlist</h1>
+    {% if items %}<p>{{ items|length }} saved product{% if items|length != 1 %}s{% endif %} — ready to reorder anytime.</p>{% else %}<p>Save products you source regularly.</p>{% endif %}
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  {% if items %}
+  <div class="grid">
+    {% for p in items %}
+    <article class="card">
+      <div class="card__media">
+        <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+        <div class="card__badges">
+          {% if p.old_price %}<span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+          {% if p.stock < 30 %}<span class="badge badge-hot">Low stock</span>{% endif %}
+        </div>
+      </div>
+      <div class="card__body">
+        <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+        <div class="card__supplier"><span>{{ p.company_name }}</span></div>
+        <div class="card__meta"><span>{{ p.stock }} in stock</span><span>Saved {{ p.added[:10] }}</span></div>
+        <div class="price-row">
+          <span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span>
+        </div>
+        <div class="card__actions">
+          <form method="post" action="{{ url_for('cart_add') }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <input type="hidden" name="qty" value="{{ p.moq }}">
+            <button class="btn btn-primary btn-sm" style="width:100%">Move to Cart</button>
+          </form>
+          <form method="post" action="{{ url_for('wishlist_toggle') }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <button class="btn btn-outline btn-sm" aria-label="Remove from wishlist">✕</button>
+          </form>
+        </div>
+        {% include "_mkt_card.html" %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    <h3>Your wishlist is empty</h3>
+    <p>Save products you're interested in to compare and buy later.</p>
+    <a class="btn btn-primary" href="{{ url_for('products') }}" style="margin-top:16px">Discover Products</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

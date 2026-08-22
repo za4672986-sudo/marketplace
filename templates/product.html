@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }} — Wholesale from {{ p.company_name }}{% endblock %}
+{% block description %}{{ p.description[:150] }}{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span>
+      <a href="{{ url_for('category', slug=p.category_slug) }}">{{ p.category_name }}</a><span class="sep">/</span>
+      <span>{{ p.name[:40] }}{% if p.name|length > 40 %}…{% endif %}</span>
+    </nav>
+  </div>
+</div>
+<div class="container" style="padding-top:40px">
+
+  <div class="pdp">
+    <div class="pdp__gallery" data-tilt data-tilt-max="5">
+      <div class="pdp__main">
+        <div class="pdp__badges">
+          {% if p.old_price %}<span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+          {% if p.verification_status == 'verified' %}<span class="badge badge-verified">✓ Verified Supplier</span>{% endif %}
+        </div>
+        <div class="ph" style="font-size:16px">{{ p.name.split(' ')[:4]|join(' ') }}</div>
+      </div>
+      <div class="pdp__gallery-glass" aria-hidden="true"></div>
+    </div>
+
+    <div>
+      <h1 class="pdp__title">{{ p.name }}</h1>
+      <div class="rating-row" style="font-size:13.5px">
+        <span class="stars">★★★★★</span>
+        <span>{{ '%.1f'|format(p.rating_avg or 4.5) }} · {{ reviews|length }} reviews</span>
+        <span style="margin-left:8px">· {{ p.sold }} units sold</span>
+      </div>
+      <div class="pdp__price">
+        ${{ '%.2f'|format(p.price) }}/unit
+        {% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}
+        <span style="font-size:13px;color:var(--slate-400);font-weight:500;display:block;margin-top:2px">
+          Save up to {{ max_save }}% at higher quantities
+        </span>
+      </div>
+      <div class="pdp__meta">
+        <span>📦 MOQ: {{ p.moq }} units</span>
+        <span>🏭 {{ p.stock }} units in stock</span>
+        <span>🔑 SKU: {{ p.sku or 'N/A' }}</span>
+        <span>🚚 {{ p.ship_time }}</span>
+        <span>🛡️ Trade Assurance</span>
+      </div>
+
+      <div style="border:1px solid var(--slate-100);border-radius:var(--r-lg);overflow:auto">
+        <table class="tier-table">
+          <thead><tr><th>Quantity</th><th>Unit Price</th><th>You Save</th></tr></thead>
+          <tbody>
+          {% for t in tiers %}
+          <tr>
+            <td>{% if loop.first %}{{ t.min_qty }} units{% else %}{{ t.min_qty }}+ units{% endif %}</td>
+            <td class="tier-price">${{ '%.2f'|format(t.price) }}/unit</td>
+            <td class="tier-save">save ${{ '%.2f'|format(tiers[0].price - t.price) }}/unit</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <form method="post" action="{{ url_for('cart_add') }}" style="margin:18px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <input type="hidden" name="product_id" value="{{ p.id }}">
+        <div class="qty-selector">
+          <button type="button" onclick="qtyChange(-1)">−</button>
+          <input type="number" name="qty" id="qtyInput" value="{{ p.moq }}" min="{{ p.moq }}" step="1">
+          <button type="button" onclick="qtyChange(1)">+</button>
+        </div>
+        <span style="font-size:13px;color:var(--slate-400)" id="qtyHint"></span>
+        <div style="width:100%;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-lg" type="submit" style="flex:1;min-width:170px">Add to Cart <span class="btn__arrow">→</span></button>
+          <button class="btn btn-accent btn-lg" type="button" data-buy-now data-pid="{{ p.id }}" data-moq="{{ p.moq }}" style="flex:1;min-width:170px">Buy Now</button>
+          <a class="btn btn-outline btn-lg" href="{{ url_for('quotes') }}" onclick="event.preventDefault();document.getElementById('quoteForm').style.display='block'">Request Bulk Quote</a>
+          <a class="btn btn-outline btn-lg" href="{{ url_for('messages') }}" onclick="event.preventDefault();document.getElementById('msgForm').style.display='block'">Contact Supplier</a>
+        </div>
+      </form>
+
+      {% include "_mkt_links.html" %}
+
+      <div class="alert alert-info" style="display:none" id="quoteForm">
+        <div style="flex:1">
+          <strong>Request a Bulk Quote</strong>
+          <form method="post" action="{{ url_for('quotes') }}" style="margin-top:12px;display:grid;gap:10px">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <input type="hidden" name="supplier_id" value="{{ p.supplier_id }}">
+            <div class="form-row">
+              <div><label class="form-hint">Required quantity</label><input class="form-control" name="qty" type="number" value="{{ p.moq * 10 }}" min="{{ p.moq }}"></div>
+              <div><label class="form-hint">Target price (USD)</label><input class="form-control" name="target_price" type="number" step="0.01" placeholder="e.g. 8.50"></div>
+            </div>
+            <div class="form-row">
+              <div><label class="form-hint">Destination</label><input class="form-control" name="destination" placeholder="City, Country"></div>
+              <div><label class="form-hint">Required delivery date</label><input class="form-control" name="delivery_date" type="date"></div>
+            </div>
+            <textarea class="form-control" name="requirements" placeholder="Additional requirements (packaging, branding, samples...)"></textarea>
+            <button class="btn btn-primary" type="submit">Send Quote Request</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="alert alert-info" style="display:none" id="msgForm">
+        <div style="flex:1">
+          <strong>Message {{ p.company_name }}</strong>
+          <form method="post" action="{{ url_for('messages') }}" style="margin-top:12px;display:grid;gap:10px">
+            <input type="hidden" name="receiver_id" value="{{ p.supplier_user_id if p.supplier_user_id else '' }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <textarea class="form-control" name="body" placeholder="Your message about {{ p.name }}..." required></textarea>
+            <button class="btn btn-primary" type="submit">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs" style="margin-top:48px">
+    <button class="tab active" onclick="switchTab(this,'tab-desc')">Description</button>
+    <button class="tab" onclick="switchTab(this,'tab-spec')">Specifications</button>
+    <button class="tab" onclick="switchTab(this,'tab-shipping')">Shipping</button>
+    <button class="tab" onclick="switchTab(this,'tab-reviews')">Reviews ({{ reviews|length }})</button>
+    <button class="tab" onclick="switchTab(this,'tab-supplier')">Supplier Information</button>
+  </div>
+
+  <div class="tab-content" id="tab-desc">
+    <div class="panel"><p style="font-size:14.5px;line-height:1.8">{{ p.description }}</p></div>
+  </div>
+  <div class="tab-content" id="tab-spec" style="display:none">
+    <div class="panel"><p style="font-size:14px;line-height:1.9;white-space:pre-line">{{ p.specifications or 'No specifications listed.' }}</p></div>
+  </div>
+  <div class="tab-content" id="tab-shipping" style="display:none">
+    <div class="panel">
+      <p style="font-size:14px"><strong>{{ p.ship_time }}</strong></p>
+      <p style="font-size:13.5px;color:var(--slate-500);margin-top:8px">Freight options: Air (3-7 days), Sea (30-45 days), Express (2-5 days). Shipping is calculated at checkout based on weight and destination.</p>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-reviews" style="display:none">
+    <div class="panel">
+      {% if reviews %}
+      <div style="display:flex;flex-direction:column;gap:16px">
+        {% for r in reviews %}
+        <div style="border-bottom:1px solid var(--slate-100);padding-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--primary-100);color:var(--primary-700);display:grid;place-items:center;font-weight:700;font-size:13px">{{ r.name[:2]|upper }}</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:700">{{ r.name }}
+                {% if r.is_verified_purchase %}<span class="badge badge-verified" style="margin-left:6px;font-size:10px">✓ Verified Purchase</span>{% endif %}
+              </div>
+              <div class="stars">{% for i in range(r.rating) %}★{% endfor %}{% for i in range(5 - r.rating) %}☆{% endfor %}</div>
+            </div>
+          </div>
+          <p style="font-size:13.5px;color:var(--slate-600)">{{ r.comment }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><h3>No reviews yet</h3><p>Be the first to review this product.</p></div>
+      {% endif %}
+      {% if g.user %}
+      <form method="post" action="{{ url_for('add_review', pid=p.id) }}" style="margin-top:20px;display:grid;gap:10px">
+        <label class="form-hint">Write a review</label>
+        <select name="rating" class="form-control" style="max-width:200px">
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+          <option value="2">★★☆☆☆ (2)</option>
+          <option value="1">★☆☆☆☆ (1)</option>
+        </select>
+        <textarea class="form-control" name="comment" placeholder="Share your experience..."></textarea>
+        <button class="btn btn-primary" style="max-width:200px">Submit Review</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="tab-content" id="tab-supplier" style="display:none">
+    <div class="panel">
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div class="supplier-card__avatar" style="margin:0">{{ p.company_name[:2]|upper }}
+          {% if p.verification_status == 'verified' %}<span class="verify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>{% endif %}
+        </div>
+        <div>
+          <div style="font-size:16px;font-weight:700">{{ p.company_name }}</div>
+          <div style="font-size:13px;color:var(--slate-400)">{{ p.s_country }}</div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-left:auto">
+          <div><b style="color:var(--slate-900)">{{ '%.1f'|format(p.rating_avg or 4.5) }}★</b><div style="font-size:11px;color:var(--slate-400)">Rating</div></div>
+          <div><b style="color:var(--slate-900)">{{ p.response_rate }}%</b><div style="font-size:11px;color:var(--slate-400)">Response rate</div></div>
+          <div><b style="color:var(--slate-900)">{{ p.response_time }}</b><div style="font-size:11px;color:var(--slate-400)">Response time</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="{{ url_for('supplier_store', slug=p.supplier_slug) }}">View Store</a>
+        <button class="btn btn-outline" onclick="document.getElementById('msgForm').style.display='block';this.closest('.panel').scrollIntoView()">Contact Supplier</button>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <div class="section-head" style="margin-top:48px">
+    <div><span class="eyebrow">You may also like</span><h2 style="font-size:24px">Related Products</h2></div>
+  </div>
+  <div class="grid">
+    {% for r in related %}
+    <article class="card">
+      <div class="card__media"><div class="ph">{{ r.name.split(' ')[:3]|join(' ') }}</div></div>
+      <div class="card__body">
+        <h3 class="card__title"><a href="{{ url_for('product', slug=r.slug) }}">{{ r.name }}</a></h3>
+        <div class="price-row"><span class="card__price">${{ '%.2f'|format(r.price) }}{% if r.old_price %}<small>${{ '%.2f'|format(r.old_price) }}</small>{% endif %}</span></div>
+        <div class="card__actions">
+          <form method="post" action="{{ url_for('cart_add') }}">
+            <input type="hidden" name="product_id" value="{{ r.id }}">
+            <input type="hidden" name="qty" value="{{ r.moq }}">
+            <button class="btn btn-primary btn-sm" style="width:100%">Add</button>
+          </form>
+        </div>
+        {% set item = r %}{% include "_mkt_card.html" %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var qty=parseInt(document.getElementById('qtyInput').value);
+var moq={{ p.moq }};
+function qtyChange(d){qty=Math.max(moq,qty+d);document.getElementById('qtyInput').value=qty;updatePrice()}
+function updatePrice(){
+  fetch('/api/product/{{ p.id }}/price?qty='+qty).then(function(r){return r.json()}).then(function(d){
+    var hint=document.getElementById('qtyHint');
+    hint.textContent='$'+Number(d.total).toFixed(2)+' total · $'+Number(d.unit).toFixed(2)+'/unit';
+  });
+}
+updatePrice();
+function switchTab(btn,id){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(function(c){c.style.display='none'});
+  document.getElementById(id).style.display='block';
+}
+</script>
+{% endblock %}

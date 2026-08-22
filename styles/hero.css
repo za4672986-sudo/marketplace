@@ -1,0 +1,330 @@
+/* Hero Section Styles */
+.hero {
+  padding: 12rem 0 8rem;
+  background: var(--slate-50);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero__container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.hero__content {
+  max-width: 620px;
+}
+
+.hero__tag {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--primary-100);
+  color: var(--primary-600);
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.hero__headline {
+  font-family: 'Playfair Display', serif;
+  font-size: 5.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--slate-900);
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero__subheadline {
+  font-size: 1.8rem;
+  color: var(--slate-600);
+  margin-bottom: 2.5rem;
+  line-height: 1.8;
+}
+
+.hero__ctas {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  background: var(--primary-600);
+  color: var(--white);
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.cta-primary:hover {
+  background: var(--primary-700);
+  transform: translateY(-2px);
+}
+
+.cta-primary:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+.cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2.5rem;
+  background: transparent;
+  color: var(--slate-800);
+  font-size: 1.5rem;
+  font-weight: 500;
+  border: 2px solid var(--slate-300);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
+}
+
+.cta-secondary:hover {
+  border-color: var(--primary-500);
+  color: var(--primary-600);
+  background: var(--primary-50);
+}
+
+.cta-secondary:focus-visible {
+  outline: 2px solid var(--primary-400);
+  outline-offset: 2px;
+}
+
+/* Floating trust cards */
+.hero__trust-cards {
+  position: absolute;
+  bottom: -2rem;
+  right: -2rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.trust-card {
+  padding: 1rem 1.5rem;
+  background: var(--white);
+  border: 1px solid var(--slate-100);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: float 6s ease-in-out infinite;
+}
+
+.trust-card__icon {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-100);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.trust-card__icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--primary-600);
+  fill: none;
+}
+
+.trust-card__label {
+  font-size: 1.2rem;
+  color: var(--slate-600);
+}
+
+.trust-card--verified {
+  animation-delay: 0s;
+}
+
+.trust-card--fast-shipping {
+  animation-delay: 1s;
+}
+
+.trust-card--secure-payment {
+  animation-delay: 2s;
+
+}
+
+.trust-card--wholesale-pricing {
+  animation-delay: 3s;
+}
+
+.trust-card--bulk-discount {
+  animation-delay: 4s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Products visual section */
+.hero__products {
+  position: relative;
+}
+
+.hero__product-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.hero__product-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Product cards floating around hero */
+.hero__floating-cards {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.floating-card {
+  position: absolute;
+  background: var(--white);
+  border: 1px solid var(--slate-100);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  animation: float 6s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.floating-card__icon {
+  width: 28px;
+  height: 28px;
+  background: var(--primary-100);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.floating-card__icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--primary-600);
+  fill: none;
+}
+
+.floating-card__text {
+  font-size: 1rem;
+  color: var(--slate-600);
+}
+
+/* Stagger animations */
+.floating-card--verified { animation-delay: 0s; opacity: 0; animation: card-in 0.8s forwards; }
+.floating-card--deals { animation-delay: 0.2s; opacity: 0; animation: card-in 0.8s forwards; }
+.floating-card--shipping { animation-delay: 0.4s; opacity: 0; animation: card-in 0.8s forwards; }
+.floating-card--payment { animation-delay: 0.6s; opacity: 0; animation: card-in 0.8s forwards; }
+.floating-card--pricing { animation-delay: 0.8s; opacity: 0; animation: card-in 0.8s forwards; }
+
+@keyframes card-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero {
+    padding: 8rem 0 5rem;
+  }
+  
+  .hero__container {
+    grid-template-columns: 1fr;
+    gap: 4rem;
+    text-align: center;
+  }
+  
+  .hero__content {
+    max-width: 100%;
+  }
+  
+  .hero__headline {
+    font-size: 3.6rem;
+  }
+  
+  .hero__subheadline {
+    font-size: 1.5rem;
+  }
+  
+  .hero__ctas {
+    justify-content: center;
+  }
+  
+  .hero__trust-cards {
+    bottom: -1rem;
+    right: 0;
+    transform: rotate(90deg);
+    transform-origin: left top;
+    flex-wrap: wrap;
+  }
+  
+  .floating-card {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero__headline {
+    font-size: 2.8rem;
+  }
+  
+  .hero__tag {
+    margin-bottom: 1rem;
+  }
+  
+  .hero__subheadline {
+    display: none;
+  }
+  
+  .hero__trust-cards {
+    display: none;
+  }
+  
+  .hero__products {
+    order: -1;
+  }
+}

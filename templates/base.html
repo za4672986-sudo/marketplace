@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}TradeLink Wholesale{% endblock %}</title>
+<meta name="description" content="{% block description %}TradeLink Wholesale — Source products directly from verified suppliers. Competitive wholesale pricing, bulk deals, and thousands of products for retailers.{% endblock %}">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="TradeLink Wholesale — B2B wholesale marketplace for retailers and growing businesses.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#101858">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="canonical" href="{{ request.url }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"TradeLink Wholesale","description":"B2B wholesale marketplace connecting verified suppliers with retailers worldwide."}
+</script>
+{% block head %}{% endblock %}
+</head>
+<body>
+
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__mark">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M3 9l9 6 9-6"/></svg>
+  </div>
+  <div class="preloader__bar"><span></span></div>
+</div>
+
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<div class="topbar">
+  <div class="container">
+    <div class="topbar__left">
+      <a class="topbar__link" href="{{ url_for('products') }}">Trade Assurance — Buyer Protection</a>
+      <a class="topbar__link" href="#">Help Center</a>
+      {% if g.user and g.user.role == 'supplier' %}
+      <a class="topbar__link" href="{{ url_for('supplier_dashboard') }}">Seller Portal</a>
+      {% elif g.user and g.user.role == 'admin' %}
+      <a class="topbar__link" href="{{ url_for('admin_panel') }}">Admin Console</a>
+      {% endif %}
+    </div>
+    <div style="display:flex;gap:20px;align-items:center;margin-left:auto">
+      <span>🌍 {{ g.user.country if g.user else 'International' }}</span>
+      <span>USD $</span>
+    </div>
+  </div>
+</div>
+
+<header class="navbar">
+  <div class="container navbar__inner">
+    <button class="hamburger" onclick="document.getElementById('drawer').classList.add('open')" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <a href="{{ url_for('home') }}" class="logo">
+      <span class="logo__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M3 9l9 6 9-6"/></svg></span>
+      <span class="logo__text"><span class="logo__name">Trade<em>link</em></span><span class="logo__tag">Wholesale</span></span>
+    </a>
+    <nav class="nav-menu">
+      <a class="nav-link" href="{{ url_for('products') }}">Products</a>
+      <a class="nav-link" href="{{ url_for('suppliers_page') }}">Suppliers</a>
+      <a class="nav-link nav-link-alibaba" href="{{ url_for('alibaba_connect') }}">Alibaba Connect</a>
+      <a class="nav-link" href="{{ url_for('products', sort='popular') }}">Best Sellers</a>
+      <a class="nav-link" href="{{ url_for('products', sort='newest') }}">New Arrivals</a>
+      {% if g.user and g.user.role == 'supplier' %}
+      <a class="nav-link" href="{{ url_for('supplier_dashboard') }}">Seller Dashboard</a>
+      {% elif g.user and g.user.role == 'admin' %}
+      <a class="nav-link" href="{{ url_for('admin_panel') }}">Admin</a>
+      {% else %}
+      <a class="nav-link" href="{{ url_for('register', role='supplier') }}">Become a Supplier</a>
+      {% endif %}
+    </nav>
+    <div class="navbar__search" id="searchWrap">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="search" id="searchInput" placeholder="Search products, brands, suppliers..." autocomplete="off">
+      </div>
+      <div class="search-dropdown" id="searchDropdown">
+        <div class="search-dropdown__group">
+          <div class="search-dropdown__label">Popular</div>
+          <a class="search-suggest" href="{{ url_for('products', q='earbuds') }}">Wireless Earbuds</a>
+          <a class="search-suggest" href="{{ url_for('products', q='solar') }}">Solar Panels</a>
+          <a class="search-suggest" href="{{ url_for('products', q='t-shirt') }}">Bulk T-Shirts</a>
+        </div>
+        <div class="search-dropdown__group" id="autocompleteGroup" style="display:none">
+          <div class="search-dropdown__label">Products</div>
+          <div id="autocompleteList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="navbar__actions">
+      <button class="icon-btn icon-btn--search" type="button" data-search-open aria-label="Open search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      </button>
+      <a class="icon-btn" href="{{ url_for('notifications') }}" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        {% if g.notif_count %}<span class="icon-btn__count">{{ g.notif_count }}</span>{% endif %}
+      </a>
+      <a class="icon-btn" href="{{ url_for('wishlist') if g.user else url_for('login') }}" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </a>
+      <a class="icon-btn" href="{{ url_for('cart') if g.user else url_for('login') }}" id="cartIconBtn" data-cart-open aria-label="Cart" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        {% if g.cart_count %}<span class="icon-btn__count" id="cartCount">{{ g.cart_count }}</span>{% endif %}
+      </a>
+      {% if g.user %}
+      <a class="icon-btn" href="{{ url_for('dashboard') if g.user.role == 'customer' else url_for('supplier_dashboard') if g.user.role == 'supplier' else url_for('admin_panel') }}" aria-label="Account">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      {% else %}
+      <a class="btn btn-primary btn-sm" href="{{ url_for('login') }}">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer__overlay" onclick="document.getElementById('drawer').classList.remove('open')"></div>
+  <div class="drawer__panel">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <a href="{{ url_for('home') }}" class="logo"><span class="logo__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg></span><span class="logo__text"><span class="logo__name">Trade<em>link</em></span></span></a>
+      <button style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--slate-500)" onclick="document.getElementById('drawer').classList.remove('open')" aria-label="Close">✕</button>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:4px">
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('home') }}">Home</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('products') }}">Products</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('suppliers_page') }}">Suppliers</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('products', sort='popular') }}">Best Sellers</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('products', sort='newest') }}">New Arrivals</a>
+      {% if g.user %}
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('dashboard') if g.user.role == 'customer' else url_for('supplier_dashboard') }}">My Dashboard</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('logout') }}">Sign Out</a>
+      {% else %}
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('login') }}">Sign In</a>
+      <a style="padding:12px 14px;border-radius:10px;font-size:15px;font-weight:500;color:var(--slate-700)" href="{{ url_for('register', role='supplier') }}">Become a Supplier</a>
+      {% endif %}
+    </nav>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flashes">
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }}">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>Free Shipping over $500</span><i>✦</i><span>Verified Suppliers Only</span><i>✦</i><span>Bulk Pricing</span><i>✦</i><span>Secure Checkout</span><i>✦</i><span>Easy Returns</span><i>✦</i><span>Trade Assurance</span><i>✦</i><span>120+ Countries</span><i>✦</i><span>Free Shipping over $500</span><i>✦</i><span>Verified Suppliers Only</span><i>✦</i><span>Bulk Pricing</span><i>✦</i><span>Secure Checkout</span><i>✦</i><span>Easy Returns</span><i>✦</i><span>Trade Assurance</span><i>✦</i><span>120+ Countries</span><i>✦</i>
+  </div>
+</div>
+
+{% if cart_drawer %}
+<!-- Cart drawer -->
+<div class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="cart-drawer__overlay" data-cart-close></div>
+  <aside class="cart-drawer__panel" role="dialog" aria-label="Shopping cart">
+    <div class="cart-drawer__head">
+      <div>
+        <h2>Your Cart</h2>
+        <span class="cart-drawer__sub" id="drawerCount">{{ cart_drawer.count }} item{% if cart_drawer.count != 1 %}s{% endif %}</span>
+      </div>
+      <button class="cart-drawer__close" data-cart-close aria-label="Close cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="cart-drawer__items" id="drawerItems">
+      {% for l in cart_drawer['items'] %}
+      <div class="cd-item" data-pid="{{ l.id }}">
+        <div class="cd-item__img">{{ l.name.split(' ')[:2]|join(' ') }}</div>
+        <div class="cd-item__info">
+          <a class="cd-item__name" href="{{ url_for('product', slug=l.slug) }}">{{ l.name[:44] }}{% if l.name|length > 44 %}…{% endif %}</a>
+          <div class="cd-item__price">${{ '%.2f'|format(l.unit) }}/unit{% if l.pct > 0 %} <span class="cd-item__save">-{{ l.pct }}%</span>{% endif %}</div>
+          <div class="cd-item__controls">
+            <button type="button" data-cq="-1" aria-label="Decrease quantity">−</button>
+            <span class="cd-item__qty">{{ l.qty }}</span>
+            <button type="button" data-cq="1" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+        <div class="cd-item__right">
+          <div class="cd-item__total">${{ '%.2f'|format(l.line_total) }}</div>
+          <button class="cd-item__remove" type="button" data-cart-remove aria-label="Remove item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg></button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="cart-drawer__foot">
+      <div class="cart-drawer__row"><span>Subtotal</span><span id="drawerSubtotal">${{ '%.2f'|format(cart_drawer.subtotal) }}</span></div>
+      {% if cart_drawer.savings > 0 %}<div class="cart-drawer__row cart-drawer__row--save"><span>Bulk savings</span><span id="drawerSavings">-${{ '%.2f'|format(cart_drawer.savings) }}</span></div>{% endif %}
+      <div class="cart-drawer__row cart-drawer__row--total"><span>Total</span><span id="drawerTotal">${{ '%.2f'|format(cart_drawer.total) }}</span></div>
+      <a class="btn btn-accent btn-lg btn-block" href="{{ url_for('checkout') }}">Proceed to Checkout <span class="btn__arrow">→</span></a>
+      <a class="btn btn-ghost btn-block" href="{{ url_for('cart') }}">View Full Cart</a>
+    </div>
+  </aside>
+</div>
+{% endif %}
+
+<!-- Mobile search overlay -->
+<div class="search-overlay" id="searchOverlay" aria-hidden="true">
+  <div class="search-overlay__bar">
+    <button class="search-overlay__back" data-search-close aria-label="Close search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="search-overlay__inputwrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="search" id="overlaySearchInput" placeholder="Search products, brands, suppliers..." autocomplete="off" aria-label="Search">
+    </div>
+    <button class="search-overlay__go btn btn-primary btn-sm" data-search-go>Search</button>
+  </div>
+  <div class="search-overlay__body">
+    <div class="search-overlay__popular" id="overlayPopular">
+      <div class="search-overlay__label">Popular</div>
+      <div class="search-overlay__chips">
+        <a class="chip chip-big" href="{{ url_for('products', q='earbuds') }}">Wireless Earbuds</a>
+        <a class="chip chip-big" href="{{ url_for('products', q='solar') }}">Solar Panels</a>
+        <a class="chip chip-big" href="{{ url_for('products', q='t-shirt') }}">Bulk T-Shirts</a>
+        <a class="chip chip-big" href="{{ url_for('products', q='charger') }}">Fast Chargers</a>
+      </div>
+    </div>
+    <div class="search-overlay__results" id="overlayResults"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <a href="{{ url_for('home') }}" class="logo">
+          <span class="logo__mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg></span>
+          <span class="logo__text"><span class="logo__name" style="color:#fff">Trade<em>link</em></span><span class="logo__tag">Wholesale</span></span>
+        </a>
+        <p class="footer__desc">TradeLink is the global B2B wholesale marketplace connecting verified suppliers with retailers, importers and bulk buyers in 190+ countries.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.55V9h3.57v11.45z"/></svg></a>
+          <a href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"/></svg></a>
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.09 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.7 4.53-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.95.93-1.95 1.89v2.26h3.32l-.53 3.49h-2.79V24C19.61 23.09 24 18.1 24 12.07z"/></svg></a>
+          <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 00.5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 002.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 002.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg></a>
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+        </div>
+      </div>
+      <div class="footer__col">
+        <h4>Marketplace</h4>
+        <ul>
+          <li><a href="{{ url_for('products') }}">All Products</a></li>
+          <li><a href="{{ url_for('products', sort='popular') }}">Best Sellers</a></li>
+          <li><a href="{{ url_for('products', sort='discount') }}">Deals</a></li>
+          <li><a href="{{ url_for('products', sort='newest') }}">New Arrivals</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>For Buyers</h4>
+        <ul>
+          <li><a href="{{ url_for('register') }}">Become a Buyer</a></li>
+          <li><a href="{{ url_for('refunds') }}">Buyer Protection</a></li>
+          <li><a href="{{ url_for('quotes') if g.user else url_for('register') }}">Request a Quote</a></li>
+          <li><a href="{{ url_for('refunds') }}">Returns &amp; Refunds</a></li>
+          <li><a href="{{ url_for('contact') }}">Payment Methods</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>For Suppliers</h4>
+        <ul>
+          <li><a href="{{ url_for('register', role='supplier') }}">Become a Supplier</a></li>
+          <li><a href="{{ url_for('about') }}">Supplier Verification</a></li>
+          <li><a href="{{ url_for('terms') }}">Selling Terms</a></li>
+          <li><a href="{{ url_for('privacy') }}">Seller Policies</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="{{ url_for('about') }}">About Us</a></li>
+          <li><a href="{{ url_for('contact') }}">Contact</a></li>
+          <li><a href="{{ url_for('contact') }}">Help Center</a></li>
+          <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+          <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 TradeLink Wholesale. All rights reserved.</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="pay-badge">Bank Transfer</span><span class="pay-badge">COD</span>
+        <span class="pay-badge">EasyPaisa</span><span class="pay-badge">JazzCash</span>
+        <span class="pay-badge">bKash</span><span class="pay-badge">GCash</span><span class="pay-badge">M-PESA</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<nav class="mobile-nav">
+  <div class="mobile-nav__grid">
+    <a class="mobile-nav__item {% if request.path == '/' %}active{% endif %}" href="{{ url_for('home') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>Home
+    </a>
+    <a class="mobile-nav__item {% if '/products' in request.path %}active{% endif %}" href="{{ url_for('products') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Products
+    </a>
+    <a class="mobile-nav__item {% if '/suppliers' in request.path %}active{% endif %}" href="{{ url_for('suppliers_page') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Search
+    </a>
+    <a class="mobile-nav__item {% if '/cart' in request.path %}active{% endif %}" href="{{ url_for('cart') if g.user else url_for('login') }}" data-cart-open>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Cart
+    </a>
+    <a class="mobile-nav__item {% if '/dashboard' in request.path %}active{% endif %}" href="{{ url_for('dashboard') if g.user and g.user.role == 'customer' else url_for('login') }}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account
+    </a>
+  </div>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span>
+  <span id="toastMsg">Added</span>
+</div>
+
+<script>
+function toast(msg){document.getElementById('toastMsg').textContent=msg;var el=document.getElementById('toast');el.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(function(){el.classList.remove('show')},2600)}
+var searchInput=document.getElementById('searchInput');
+var searchDropdown=document.getElementById('searchDropdown');
+if(searchInput){
+  searchInput.addEventListener('focus',function(){searchDropdown.classList.add('open')});
+  document.addEventListener('click',function(e){if(!e.target.closest('#searchWrap'))searchDropdown.classList.remove('open')});
+  searchInput.addEventListener('input',function(){
+    var q=searchInput.value.trim();
+    var group=document.getElementById('autocompleteGroup');
+    var list=document.getElementById('autocompleteList');
+    if(q.length<2){group.style.display='none';return}
+    fetch('/api/search?q='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(d){
+      if(!d.results.length){group.style.display='none';return}
+      group.style.display='block';
+      list.innerHTML=d.results.map(function(p){
+        return '<a class="search-product" href="/product/'+p.slug+'"><div class="search-product__img"></div><div class="search-product__info"><div class="search-product__name">'+p.name+'</div><div class="search-product__price">$'+Number(p.price).toFixed(2)+'/unit · MOQ '+p.moq+'</div></div></a>'
+      }).join('');
+    });
+  searchInput.addEventListener('keydown',function(e){
+    if(e.key==='Enter'){var q=searchInput.value.trim();if(q){window.location.href='/products?q='+encodeURIComponent(q)}}
+  });
+}
+var drawer=document.getElementById('drawer');
+if(drawer){drawer.style.display='none'}
+function openDrawer(){var d=document.getElementById('drawer');d.style.display='block';requestAnimationFrame(function(){d.classList.add('open')})}
+document.querySelectorAll('[onclick*="drawer.classList.add"]').forEach(function(b){b.onclick=openDrawer});
+
+/* Active nav link highlight */
+(function(){
+  var path=location.pathname;
+  document.querySelectorAll('.nav-link').forEach(function(a){
+    var href=a.getAttribute('href')||'';
+    if(href==='/'){if(path==='/')a.classList.add('active')}
+    else if(path.indexOf(href)===0&&href.length>1){a.classList.add('active')}
+  });
+})();
+
+/* ---------- UI animations ---------- */
+var reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var navbar=document.querySelector('.navbar');
+if(navbar&&!reduced){navbar.classList.add('anim-ready')}
+var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+      var countEl=e.target.querySelectorAll('[data-count]');
+      countEl.forEach(animateCount);
+    }
+  });
+},{threshold:.12});
+function watchReveals(root){
+  (root||document).querySelectorAll('.reveal:not(.visible)').forEach(function(el){
+    io.observe(el);
+  });
+}
+function animateCount(el){
+  if(el.dataset.done)return;el.dataset.done=1;
+  var target=parseFloat(el.dataset.count);var dec=el.dataset.decimals?parseInt(el.dataset.decimals):0;
+  var pre=el.dataset.prefix||'';var suf=el.dataset.suffix||'';
+  var t0=null;
+  function step(ts){
+    if(!t0)t0=ts;
+    var p=Math.min((ts-t0)/1100,1);
+    var eased=1-Math.pow(1-p,3);
+    el.textContent=pre+Number(target*eased).toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec})+suf;
+    if(p<1)requestAnimationFrame(step);else el.textContent=pre+target.toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec})+suf;
+  }
+  requestAnimationFrame(step);
+}
+document.querySelectorAll('.stat-card [data-count], .hero-stats [data-count]').forEach(function(el){
+  if(el.dataset.done)return;
+  var p=el.closest('.stat-card')||el;
+  p.classList.add('reveal');p.classList.add('visible');
+  animateCount(el);
+});
+watchReveals();
+function onScrollAnim(){
+  if(window.scrollY>40&&navbar){navbar.classList.add('scrolled')}else if(navbar){navbar.classList.remove('scrolled')}
+  if(window.scrollY>420){scrollTop.classList.add('show')}else{scrollTop.classList.remove('show')}
+}
+var scrollTop=document.createElement('button');
+scrollTop.className='scroll-top';scrollTop.setAttribute('aria-label','Back to top');
+scrollTop.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>';
+scrollTop.addEventListener('click',function(){window.scrollTo({top:0,behavior:reduced?'auto':'smooth'})});
+document.body.appendChild(scrollTop);
+window.addEventListener('scroll',onScrollAnim,{passive:true});
+onScrollAnim();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

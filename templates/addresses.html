@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Saved Addresses — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Saved Addresses</span>
+    </nav>
+    <h1>Saved Addresses</h1>
+    <p>Your shipping addresses across the marketplace.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="dash-layout">
+    {% include "_dash_sidebar.html" %}
+    <div>
+      {% if rows %}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+        {% for a in rows %}
+        <div class="panel" style="position:relative">
+          {% if a.is_default %}<span class="badge badge-verified" style="position:absolute;top:14px;right:14px">Default</span>{% endif %}
+          <div style="font-size:13px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">{{ a.label }}</div>
+          <p style="font-size:14px;margin:0"><b>{{ a.full_name }}</b><br>{{ a.line1 }}{% if a.line2 %}, {{ a.line2 }}{% endif %}<br>{{ a.city }}, {{ a.state }} {{ a.zip }}<br>{{ a.country }}</p>
+          <form method="post" action="{{ url_for('addresses') }}" style="margin-top:12px">
+            <input type="hidden" name="delete" value="{{ a.id }}">
+            <button class="btn btn-outline btn-sm" style="color:var(--error)">Delete</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="panel">
+        <h3>Add New Address</h3>
+        <form method="post" action="{{ url_for('addresses') }}">
+          <div class="form-row">
+            <div class="form-group"><label>Label</label><input class="form-control" name="label" value="Business"></div>
+            <div class="form-group"><label>Full name</label><input class="form-control" name="full_name" required></div>
+          </div>
+          <div class="form-group"><label>Phone</label><input class="form-control" name="phone"></div>
+          <div class="form-group"><label>Address line 1</label><input class="form-control" name="line1" required></div>
+          <div class="form-row">
+            <div class="form-group"><label>City</label><input class="form-control" name="city" required></div>
+            <div class="form-group"><label>State</label><input class="form-control" name="state"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>ZIP</label><input class="form-control" name="zip"></div>
+            <div class="form-group"><label>Country</label><input class="form-control" name="country" value="United States"></div>
+          </div>
+          <button class="btn btn-primary" type="submit">Save Address</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Quote Requests — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band page-band--slim">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span><span>Quote Requests</span>
+    </nav>
+    <h1>Quote Requests</h1>
+    <p>Negotiate large-volume pricing directly with suppliers.</p>
+  </div>
+</div>
+<div class="container" style="padding-top:36px;max-width:900px">
+  {% if rows %}
+  {% for q in rows %}
+  <div class="quote-card">
+    <div class="quote-card__head">
+      <div class="quote-card__product">{{ q.product_name }}</div>
+      <span class="badge {% if q.status == 'responded' %}badge-verified{% elif q.status == 'pending' %}badge-pending{% else %}badge-soft{% endif %}">{{ q.status|title }}</span>
+    </div>
+    <div class="quote-card__meta">
+      <div><b>Supplier:</b> {{ q.company_name }}</div>
+      <div><b>Quantity:</b> {{ q.qty }} units</div>
+      <div><b>Target price:</b> {% if q.target_price %}${{ '%.2f'|format(q.target_price) }}{% else %}—{% endif %}</div>
+      <div><b>Destination:</b> {{ q.destination or '—' }}</div>
+      <div><b>Delivery by:</b> {{ q.delivery_date or '—' }}</div>
+      <div><b>Requested:</b> {{ q.created_at[:10] }}</div>
+    </div>
+    {% if q.requirements %}<p style="font-size:13.5px;color:var(--slate-500)"><b>Requirements:</b> {{ q.requirements }}</p>{% endif %}
+    {% if q.response %}
+    <div class="quote-card__response"><b>Supplier response:</b> {{ q.response }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10h8"/><path d="M8 14h5"/><path d="M6 2h12v4H6z"/><path d="M6 6v14a2 2 0 002 2h8a2 2 0 002-2V6"/></svg>
+    <h3>No quote requests yet</h3>
+    <p>Request bulk quotes on any product page to negotiate better wholesale pricing.</p>
+    <a class="btn btn-primary" href="{{ url_for('products') }}" style="margin-top:16px">Browse Products</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

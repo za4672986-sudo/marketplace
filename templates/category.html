@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ cat.name }} — Wholesale — TradeLink{% endblock %}
+{% block content %}
+<div class="page-band">
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="{{ url_for('home') }}">Home</a><span class="sep">/</span>
+      <a href="{{ url_for('products') }}">Products</a><span class="sep">/</span>
+      <span>{{ cat.name }}</span>
+    </nav>
+    <h1>{{ cat.name }}</h1>
+    <p>{{ items|length }} wholesale products from verified suppliers.</p>
+    <div class="band-stats">
+      <div class="band-stat"><b><em>{{ items|length }}</em>+</b><span>Products</span></div>
+      <div class="band-stat"><b><em>MOQ</em></b><span>Low minimums</span></div>
+      <div class="band-stat"><b><em>Tiered</em></b><span>Bulk pricing</span></div>
+    </div>
+  </div>
+</div>
+<div class="container" style="padding-top:36px">
+  {% if items %}
+  <div class="grid">
+    {% for p in items %}
+    <article class="card">
+      <div class="card__media">
+        <div class="ph">{{ p.name.split(' ')[:3]|join(' ') }}</div>
+        <button class="wish-btn" type="button" data-wish data-pid="{{ p.id }}" aria-label="Add to wishlist" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+        <div class="card__badges">
+          {% if p.old_price %}<span class="badge badge-sale">-{{ ((1 - p.price/p.old_price)*100)|round|int }}%</span>{% endif %}
+          {% if p.verification_status == 'verified' %}<span class="badge badge-verified">✓</span>{% endif %}
+        </div>
+      </div>
+      <div class="card__body">
+        <h3 class="card__title"><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+        <div class="card__supplier"><span>{{ p.company_name }} · {{ p.s_country }}</span></div>
+        <div class="card__meta"><span>MOQ: {{ p.moq }}</span><span>{{ p.ship_time }}</span></div>
+        <div class="price-row">
+          <span class="card__price">${{ '%.2f'|format(p.price) }}{% if p.old_price %}<small>${{ '%.2f'|format(p.old_price) }}</small>{% endif %}</span>
+        </div>
+        <div class="card__actions">
+          <form method="post" action="{{ url_for('cart_add') }}">
+            <input type="hidden" name="product_id" value="{{ p.id }}">
+            <input type="hidden" name="qty" value="{{ p.moq }}">
+            <button class="btn btn-primary btn-sm" style="width:100%">Add to Cart</button>
+          </form>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('product', slug=p.slug) }}">View</a>
+        </div>
+        {% include "_mkt_card.html" %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><h3>No products in this category yet</h3><p>Check back soon or browse all products.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
